@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"magley"
+	],
+	"copyright": "Copyright © 2025, magley",
+	"description": "Program for removing duplicate files.",
+	"license": "BSD-2-Clause",
+	"name": "duplicate_remover"
+}
