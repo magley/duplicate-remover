@@ -15,7 +15,7 @@ void main()
 	writeln("Found ", groups.length, " groups");
 
 	writeln("Computing collisions...");
-	string[][] collisions = hash_groups(groups);
+	string[][] collisions = hash_groups_parallel(groups, 4);
 	writeln("Found ", collisions.length, " collisions");
 
 	foreach (coll; collisions)
