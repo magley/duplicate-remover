@@ -16,10 +16,12 @@ void main()
 
 	writeln("Computing collisions...");
 	string[][] collisions = hash_groups_parallel(groups, 4);
-	writeln("Found ", collisions.length, " collisions");
-
-	foreach (coll; collisions)
+	uint conflicing_files = 0;
+	foreach (c; collisions)
 	{
-		writeln(coll);
+		foreach (f; c)
+			conflicing_files++;
 	}
+
+	writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
 }

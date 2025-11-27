@@ -5,15 +5,20 @@ import std.file;
 import std.digest.sha;
 import core.thread.osthread;
 import util;
+import finder;
 
 class GroupHasherThread : Thread
 {
     string[][] groups;
     string[][] collisions;
 
-    this(string[][] groups)
+    this(GroupWithSize[] groups_with_size)
     {
-        this.groups = groups;
+        foreach (GroupWithSize g; groups_with_size)
+        {
+            this.groups ~= g.group;
+        }
+
         super(&run);
     }
 
@@ -28,7 +33,8 @@ string[][] hash_groups_parallel(string[][] groups, int nthreads)
     string[][] collisions;
     GroupHasherThread[] workers;
 
-    string[][][] groups_split = split_evenly(groups, nthreads);
+    //string[][][] groups_split = split_evenly(groups, nthreads);
+    GroupWithSize[][] groups_split = split_groups_distribute_size_evenly(groups, nthreads);
 
     foreach (g; groups_split)
     {
