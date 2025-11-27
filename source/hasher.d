@@ -24,7 +24,9 @@ class GroupHasherThread : Thread
 
     private void run()
     {
-        collisions = hash_groups(groups);
+        int[] k = [1, 4, 64, 128];
+        //k = [-1];
+        collisions = hash_groups_partial_recursive(groups, k);
     }
 }
 
@@ -59,6 +61,33 @@ string[][] hash_groups_parallel(string[][] groups, int nthreads)
     return collisions;
 }
 
+private string[][] hash_groups_partial_recursive(string[][] groups, int[] partial_k)
+{
+    string[][] G = groups;
+
+    foreach (int k; partial_k)
+    {
+        string[][] collisions;
+
+        foreach (size_t i, string[] group; G)
+        {
+            string[] group_collisions = hash_group_partial(group, k);
+            if (group_collisions.length < 2)
+                continue;
+
+            collisions ~= group_collisions;
+        }
+
+        G = collisions;
+        if (G.length == 0)
+        {
+            break;
+        }
+    }
+
+    return G;
+}
+
 private string[][] hash_groups(string[][] groups)
 {
     string[][] collisions;
@@ -77,12 +106,17 @@ private string[][] hash_groups(string[][] groups)
 
 private string[] hash_group(string[] group)
 {
+    return hash_group_partial(group, -1);
+}
+
+private string[] hash_group_partial(string[] group, int k)
+{
     string[] collisions;
 
     string[][string] hash_dict;
     foreach (string filename; group)
     {
-        string hash = hash_file(filename);
+        string hash = hash_file_partial(filename, k);
         hash_dict[hash] ~= filename;
     }
 
@@ -99,14 +133,25 @@ private string[] hash_group(string[] group)
 
 private string hash_file(string path)
 {
-    const uint chunk_size = 128 * 1024;
+    return hash_file_partial(path, -1);
+}
+
+private string hash_file_partial(string path, int k)
+{
+    const uint chunk_size = 1 * 1024;
 
     SHA256 h;
 
     auto f = File(path, "rb");
+    int chunk_index = 0;
     foreach (chunk; f.byChunk(chunk_size))
     {
         h.put(chunk);
+        chunk_index++;
+        if (k > 0 && chunk_index > k)
+        {
+            break;
+        }
     }
 
     auto hash = h.finish();

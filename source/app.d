@@ -1,6 +1,7 @@
 import std.stdio;
 import std.array;
 import std.string;
+import std.datetime.stopwatch;
 
 import finder;
 import hasher;
@@ -9,6 +10,9 @@ void main()
 {
 	writeln("Enter directory:");
 	string dir = readln().strip().replace("\\", "/");
+
+	StopWatch sw;
+	sw.start();
 
 	writeln("Scanning directory...");
 	string[][] groups = group_files(dir);
@@ -23,5 +27,9 @@ void main()
 			conflicing_files++;
 	}
 
+	long exec_ms = sw.peek().total!"msecs"();
+
 	writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
+	writeln("Total time: ", exec_ms);
+
 }
