@@ -6,6 +6,7 @@ import std.digest.sha;
 import core.thread.osthread;
 import util;
 import finder;
+import xxhash3;
 
 class GroupHasherThread : Thread
 {
@@ -140,7 +141,8 @@ private string hash_file_partial(string path, int k)
 {
     const uint chunk_size = 1 * 1024;
 
-    SHA256 h;
+    // SHA256 h;
+    XXH_32 h;
 
     auto f = File(path, "rb");
     int chunk_index = 0;

@@ -30,6 +30,6 @@ void main()
 	long exec_ms = sw.peek().total!"msecs"();
 
 	writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
-	writeln("Total time: ", exec_ms);
+	writeln("Total time: ", exec_ms, "ms (", exec_ms / 1000.0, "s)");
 
 }
