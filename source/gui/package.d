@@ -19,6 +19,7 @@ class ProgramState
 {
     string directory = "";
     int worker_count = 4;
+    FinderAndRemoverThread worker = null;
 }
 
 ProgramState P;
@@ -211,6 +212,61 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
 
 extern (C) int cb_btn_run_clicked(Ihandle* self)
 {
+    P.worker = new FinderAndRemoverThread(P.directory, P.worker_count);
+    P.worker.run();
     return IUP_DEFAULT;
 }
 
+class FinderAndRemoverThread : Thread
+{
+    // Input
+    string dir;
+    int workers;
+
+    // Results
+    string[][] groups;
+    string[][] collisions;
+
+    // Timing
+    StopWatch sw;
+    long scan_time_ms = 0;
+    long collision_time_ms = 0;
+    long total_time_ms() => scan_time_ms + collision_time_ms;
+
+    this(string directory, int worker_count)
+    {
+        this.dir = directory;
+        this.workers = worker_count;
+        super(&run);
+    }
+
+    private void run()
+    {
+        writeln("Begin ", dir, " with ", workers, " threads...");
+
+        sw.start();
+
+        groups = group_files(dir);
+        scan_time_ms = sw.peek().total!"msecs"();
+        sw.reset();
+
+        collisions = hash_groups_parallel(groups, workers);
+        collision_time_ms = sw.peek().total!"msecs"();
+        sw.reset();
+
+        finish();
+    }
+
+    private void finish()
+    {
+        uint conflicing_files = 0;
+        foreach (c; collisions)
+        {
+            foreach (f; c)
+                conflicing_files++;
+        }
+
+        writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
+        writeln("Total time: ", total_time_ms(), "ms (", total_time_ms() / 1000.0, "s)");
+    }
+}
