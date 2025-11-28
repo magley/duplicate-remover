@@ -1,16 +1,24 @@
 module gui;
 
+import std.stdio;
 import std.conv;
 import std.string;
+import std.datetime.stopwatch;
+import core.thread.osthread;
+import std.algorithm;
 
 import vendor.iup;
 
 import finder;
 import hasher;
 
+const int MIN_THREADS = 1;
+const int MAX_THREADS = 8;
+
 class ProgramState
 {
     string directory = "";
+    int worker_count = 4;
 }
 
 ProgramState P;
@@ -37,7 +45,25 @@ void main_gui()
     IupSetHandle("dir_info_label", dir_info_label);
     IupSetAttribute(dir_info_label, "EXPAND", "HORIZONTAL");
 
-    Ihandle* main_vbox = IupVbox(dir_pick_container, dir_info_label, null);
+    Ihandle* params_workern_label = IupLabel("Threads:                ");
+    IupSetHandle("params_workern_label", params_workern_label);
+
+    Ihandle* params_workern_text = IupText(null);
+    IupSetHandle("params_workern_text", params_workern_text);
+    IupSetCallback(params_workern_text, "SPIN_CB", cast(Icallback)&cb_params_workern_spinner_changed);
+    IupSetCallback(params_workern_text, "VALUECHANGED_CB", &cb_params_workern_value_changed);
+    IupSetAttribute(params_workern_text, "FILTER", "NUMBER ");
+    IupSetAttribute(params_workern_text, "SPIN", "YES");
+    IupSetAttribute(params_workern_text, "SPINVALUE", "4");
+    IupSetAttribute(params_workern_text, "SPINMIN", to!string(MIN_THREADS).toStringz);
+    IupSetAttribute(params_workern_text, "SPINMAX", to!string(MAX_THREADS).toStringz);
+
+    Ihandle* params_hbox = IupHbox(params_workern_label, params_workern_text, null);
+
+    Ihandle* btn_run = IupButton("Begin", null);
+    IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
+
+    Ihandle* main_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox, btn_run, null);
     IupSetHandle("main_vbox", main_vbox);
 
     Ihandle* main_dlg = IupDialog(main_vbox);
@@ -157,3 +183,34 @@ string to_size_byte_unit(ulong size_bytes)
     }
     return format("%.2fGB", cast(float) size_bytes / GB);
 }
+
+extern (C) int cb_params_workern_spinner_changed(Ihandle* self, int newval)
+{
+    P.worker_count = newval;
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_params_workern_value_changed(Ihandle* self)
+{
+    try
+    {
+        string v = to!string(IupGetAttribute(self, "VALUE"));
+        uint val = parse!uint(v);
+        val = min(MAX_THREADS, max(val, MIN_THREADS));
+        P.worker_count = val;
+    }
+    catch (ConvException)
+    {
+        // Do nothing, keep P.worker_count
+    }
+
+    IupSetAttribute(self, "VALUE", to!string(P.worker_count).toStringz);
+
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_btn_run_clicked(Ihandle* self)
+{
+    return IUP_DEFAULT;
+}
+
