@@ -6,6 +6,8 @@ import std.path;
 import std.algorithm;
 import std.array;
 
+import util;
+
 struct GroupWithSize
 {
     string[] group;
@@ -17,7 +19,14 @@ struct GroupWithSize
         this.size = 0;
         foreach (string fname; group)
         {
-            this.size += getSize(fname);
+            try
+            {
+                this.size += getSize(safepath(fname));
+            }
+            catch (Exception e)
+            {
+                writeln(e);
+            }
         }
     }
 }

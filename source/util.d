@@ -24,3 +24,19 @@ T[][] split_evenly(T)(T[] arr, ulong parts)
 
     return result;
 }
+
+string safepath(string path)
+{
+    version (Windows)
+    {
+        const static string PREFIX = `\\?\`;
+        if (path.startsWith(PREFIX))
+            return path;
+
+        return PREFIX ~ path;
+    }
+    else
+    {
+        return path;
+    }
+}

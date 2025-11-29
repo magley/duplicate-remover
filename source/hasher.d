@@ -181,11 +181,20 @@ private string[] hash_group_partial(string[] group, int k, ProgressFunc progress
     string[][string] hash_dict;
     foreach (string filename; group)
     {
-        string hash = hash_file_partial(filename, k);
-        completed++;
-        if (progress_cb !is null)
-            progress_cb(completed, total);
-        hash_dict[hash] ~= filename;
+        try
+        {
+            string hash = hash_file_partial(filename, k);
+            completed++;
+            hash_dict[hash] ~= filename;
+            if (progress_cb !is null)
+            {
+                progress_cb(completed, total);
+            }
+        }
+        catch (Exception e)
+        {
+            writeln(e);
+        }
     }
 
     foreach (string[] collision_group; hash_dict)
@@ -211,7 +220,7 @@ private string hash_file_partial(string path, int k)
     // SHA256 h;
     XXH_32 h;
 
-    auto f = File(path, "rb");
+    auto f = File(safepath(path), "rb");
     int chunk_index = 0;
     foreach (chunk; f.byChunk(chunk_size))
     {
