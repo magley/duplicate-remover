@@ -37,7 +37,7 @@ void main_gui()
 
     Ihandle* dir_pick_btn = IupButton("Select...", null);
     IupSetCallback(dir_pick_btn, "ACTION", &cb_open_directory_picker_dialog);
-    IupSetHandle("dir_pick_btn", dir_pick_label);
+    IupSetHandle("dir_pick_btn", dir_pick_btn);
 
     Ihandle* dir_pick_container = IupHbox(dir_pick_label, dir_pick_btn, null);
     IupSetHandle("dir_pick_container", dir_pick_container);
@@ -63,19 +63,28 @@ void main_gui()
 
     Ihandle* btn_run = IupButton("Begin", null);
     IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
+    IupSetHandle("btn_run", btn_run);
 
-    Ihandle* main_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox, btn_run, null);
+    Ihandle* setup_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox);
+    IupSetHandle("setup_vbox", setup_vbox);
+
+    Ihandle* setup_frame = IupFrame(setup_vbox);
+    IupSetHandle("setup_frame", setup_frame);
+    IupSetAttribute(setup_frame, "TITLE", "Configuration");
+    IupSetAttribute(setup_frame, "SUNKEN", "YES");
+
+    Ihandle* main_vbox = IupVbox(setup_frame, btn_run, null);
     IupSetHandle("main_vbox", main_vbox);
 
     Ihandle* main_dlg = IupDialog(main_vbox);
     IupSetAttribute(main_dlg, "TITLE", "Duplicate Remover");
-    IupSetAttribute(main_dlg, "MINSIZE", "200x125");
+    IupSetAttribute(main_dlg, "MINSIZE", "200x200");
     IupSetAttribute(main_dlg, "MARGIN", "3x3");
     IupSetHandle("main", main_dlg);
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
 
-    IupSetAttribute(main_dlg, "RASTERSIZE", "300x150");
+    IupSetAttribute(main_dlg, "RASTERSIZE", "300x200");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
 
