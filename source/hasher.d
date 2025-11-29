@@ -8,10 +8,75 @@ import util;
 import finder;
 import xxhash3;
 
+alias ProgressFunc = void delegate(int, int);
+
+class GroupsHasher
+{
+    // Input
+    string[][] groups;
+    int worker_count;
+
+    // State
+    string[][] collisions;
+    GroupHasherThread[] workers;
+    GroupWithSize[][] groups_split;
+
+    // Redundant state
+    float progress = 0;
+    bool finished = false;
+
+    this(string[][] groups, int worker_count)
+    {
+        this.groups = groups;
+        this.worker_count = worker_count;
+        this.groups_split = split_groups_distribute_size_evenly(this.groups, this.worker_count);
+    }
+
+    void run()
+    {
+        foreach (g; groups_split)
+        {
+            GroupHasherThread worker = new GroupHasherThread(g);
+            workers ~= worker;
+            worker.start();
+        }
+
+        foreach (GroupHasherThread worker; workers)
+        {
+            worker.join();
+        }
+
+        foreach (GroupHasherThread worker; workers)
+        {
+            foreach (collision; worker.collisions)
+            {
+                collisions ~= collision;
+            }
+        }
+
+        finished = true;
+    }
+
+    float get_progress()
+    {
+        float p = 0;
+        foreach (w; workers)
+        {
+            p += w.get_progress();
+        }
+        p /= workers.length;
+        return p;
+    }
+}
+
+/// Single worker running in its own thread. 
 class GroupHasherThread : Thread
 {
     string[][] groups;
     string[][] collisions;
+
+    int total = 1;
+    int current = 0;
 
     this(GroupWithSize[] groups_with_size)
     {
@@ -19,6 +84,7 @@ class GroupHasherThread : Thread
         {
             this.groups ~= g.group;
         }
+        this.isDaemon(true);
 
         super(&run);
     }
@@ -26,43 +92,41 @@ class GroupHasherThread : Thread
     private void run()
     {
         int[] k = [1, 4, 64, 128];
-        //k = [-1];
-        collisions = hash_groups_partial_recursive(groups, k);
+        k = [-1];
+
+        current = 0;
+        total = 0;
+        foreach (g; groups)
+        {
+            total += g.length;
+        }
+
+        collisions = hash_groups_partial_recursive(groups, k, &on_progress);
+    }
+
+    void on_progress(int curr, int total)
+    {
+        current++;
+        //writeln(curr, " ", total);
+        //this.current = curr;
+        //this.total = total;
+    }
+
+    float get_progress()
+    {
+        return cast(float) current / cast(float) total;
     }
 }
 
+/// Prefer to use GroupsHasher directly, especially if you need to track state.
 string[][] hash_groups_parallel(string[][] groups, int nthreads)
 {
-    string[][] collisions;
-    GroupHasherThread[] workers;
-
-    //string[][][] groups_split = split_evenly(groups, nthreads);
-    GroupWithSize[][] groups_split = split_groups_distribute_size_evenly(groups, nthreads);
-
-    foreach (g; groups_split)
-    {
-        GroupHasherThread worker = new GroupHasherThread(g);
-        workers ~= worker;
-        worker.start();
-    }
-
-    foreach (GroupHasherThread worker; workers)
-    {
-        worker.join();
-    }
-
-    foreach (GroupHasherThread worker; workers)
-    {
-        foreach (collision; worker.collisions)
-        {
-            collisions ~= collision;
-        }
-    }
-
-    return collisions;
+    GroupsHasher g = new GroupsHasher(groups, nthreads);
+    g.run();
+    return g.collisions;
 }
 
-private string[][] hash_groups_partial_recursive(string[][] groups, int[] partial_k)
+private string[][] hash_groups_partial_recursive(string[][] groups, int[] partial_k, ProgressFunc progress_cb)
 {
     string[][] G = groups;
 
@@ -72,7 +136,7 @@ private string[][] hash_groups_partial_recursive(string[][] groups, int[] partia
 
         foreach (size_t i, string[] group; G)
         {
-            string[] group_collisions = hash_group_partial(group, k);
+            string[] group_collisions = hash_group_partial(group, k, progress_cb);
             if (group_collisions.length < 2)
                 continue;
 
@@ -89,13 +153,13 @@ private string[][] hash_groups_partial_recursive(string[][] groups, int[] partia
     return G;
 }
 
-private string[][] hash_groups(string[][] groups)
+private string[][] hash_groups(string[][] groups, ProgressFunc progress_cb)
 {
     string[][] collisions;
 
     foreach (size_t i, string[] group; groups)
     {
-        string[] group_collisions = hash_group(group);
+        string[] group_collisions = hash_group(group, progress_cb);
         if (group_collisions.length < 2)
             continue;
 
@@ -105,19 +169,25 @@ private string[][] hash_groups(string[][] groups)
     return collisions;
 }
 
-private string[] hash_group(string[] group)
+private string[] hash_group(string[] group, ProgressFunc progress_cb)
 {
-    return hash_group_partial(group, -1);
+    return hash_group_partial(group, -1, progress_cb);
 }
 
-private string[] hash_group_partial(string[] group, int k)
+private string[] hash_group_partial(string[] group, int k, ProgressFunc progress_cb)
 {
     string[] collisions;
+
+    int total = cast(int) group.length;
+    int completed = 0;
 
     string[][string] hash_dict;
     foreach (string filename; group)
     {
         string hash = hash_file_partial(filename, k);
+        completed++;
+        if (progress_cb !is null)
+            progress_cb(completed, total);
         hash_dict[hash] ~= filename;
     }
 

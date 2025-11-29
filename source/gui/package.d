@@ -46,7 +46,7 @@ void main_gui()
     IupSetHandle("dir_info_label", dir_info_label);
     IupSetAttribute(dir_info_label, "EXPAND", "HORIZONTAL");
 
-    Ihandle* params_workern_label = IupLabel("Threads:                ");
+    Ihandle* params_workern_label = IupLabel("Threads:");
     IupSetHandle("params_workern_label", params_workern_label);
 
     Ihandle* params_workern_text = IupText(null);
@@ -60,10 +60,8 @@ void main_gui()
     IupSetAttribute(params_workern_text, "SPINMAX", to!string(MAX_THREADS).toStringz);
 
     Ihandle* params_hbox = IupHbox(params_workern_label, params_workern_text, null);
-
-    Ihandle* btn_run = IupButton("Begin", null);
-    IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
-    IupSetHandle("btn_run", btn_run);
+    IupSetHandle("params_hbox", params_hbox);
+    IupSetAttribute(params_hbox, "GAP", "50");
 
     Ihandle* setup_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox);
     IupSetHandle("setup_vbox", setup_vbox);
@@ -73,7 +71,22 @@ void main_gui()
     IupSetAttribute(setup_frame, "TITLE", "Configuration");
     IupSetAttribute(setup_frame, "SUNKEN", "YES");
 
-    Ihandle* main_vbox = IupVbox(setup_frame, btn_run, null);
+    Ihandle* btn_run = IupButton("Begin", null);
+    IupSetAttribute(btn_run, "PADDING", "12x5");
+    IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
+    IupSetHandle("btn_run", btn_run);
+
+    Ihandle* run_progress = IupProgressBar();
+    IupSetAttribute(run_progress, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(run_progress, "DASHED", "NO");
+    IupSetAttribute(run_progress, "MAX", "100");
+    IupSetAttribute(run_progress, "VALUE", "0");
+    IupSetHandle("run_progress", run_progress);
+
+    Ihandle* run_container = IupVbox(btn_run, run_progress, null);
+    IupSetHandle("run_container", run_container);
+
+    Ihandle* main_vbox = IupVbox(setup_frame, run_container, null);
     IupSetHandle("main_vbox", main_vbox);
 
     Ihandle* main_dlg = IupDialog(main_vbox);
@@ -84,7 +97,7 @@ void main_gui()
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
 
-    IupSetAttribute(main_dlg, "RASTERSIZE", "300x200");
+    IupSetAttribute(main_dlg, "RASTERSIZE", "300x300");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
 
@@ -230,7 +243,7 @@ class FinderAndRemoverThread : Thread
 {
     // Input
     string dir;
-    int workers;
+    int worker_count;
 
     // Results
     string[][] groups;
@@ -242,20 +255,26 @@ class FinderAndRemoverThread : Thread
     long collision_time_ms = 0;
     long total_time_ms() => scan_time_ms + collision_time_ms;
 
+    // State
+    GroupsHasher worker;
+    ProgressThread progress;
+
     this(string directory, int worker_count)
     {
         this.dir = directory;
-        this.workers = worker_count;
+        this.worker_count = worker_count;
+        this.isDaemon(true);
         super(&run);
     }
 
     private void run()
     {
-        writeln("Begin ", dir, " with ", workers, " threads...");
+        writeln("Begin ", dir, " with ", worker_count, " threads...");
 
         IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
+        IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
 
         sw.start();
 
@@ -263,13 +282,23 @@ class FinderAndRemoverThread : Thread
         scan_time_ms = sw.peek().total!"msecs"();
         sw.reset();
 
-        collisions = hash_groups_parallel(groups, workers);
+        worker = new GroupsHasher(groups, worker_count);
+        progress = new ProgressThread(worker);
+
+        progress.start();
+        worker.run();
+        collisions = worker.collisions;
+        // collisions = hash_groups_parallel(groups, worker_count);
+
+        progress.join();
+
         collision_time_ms = sw.peek().total!"msecs"();
         sw.reset();
 
         IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+        IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
 
         finish();
     }
@@ -285,5 +314,38 @@ class FinderAndRemoverThread : Thread
 
         writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
         writeln("Total time: ", total_time_ms(), "ms (", total_time_ms() / 1000.0, "s)");
+    }
+}
+
+class ProgressThread : Thread
+{
+    GroupsHasher worker;
+
+    this(GroupsHasher worker)
+    {
+        this.worker = worker;
+        this.isDaemon(true);
+        super(&run);
+    }
+
+    void run()
+    {
+        Ihandle* run_progress = IupGetHandle("run_progress");
+        int max = 100;
+
+        while (!worker.finished)
+        {
+            Thread.sleep(dur!("msecs")(100));
+            float p = worker.get_progress();
+
+            int new_val = cast(int)(max * p);
+            IupSetStrAttribute(run_progress, "VALUE", to!string(new_val).toStringz());
+
+            if (p >= 1.0)
+            {
+                break;
+            }
+        }
+
     }
 }
