@@ -78,6 +78,8 @@ class GroupHasherThread : Thread
     int total = 1;
     int current = 0;
 
+    int[] k = [1];
+
     this(GroupWithSize[] groups_with_size)
     {
         foreach (GroupWithSize g; groups_with_size)
@@ -91,9 +93,6 @@ class GroupHasherThread : Thread
 
     private void run()
     {
-        int[] k = [1, 4, 64, 128];
-        k = [-1];
-
         current = 0;
         total = 0;
         foreach (g; groups)
@@ -107,14 +106,12 @@ class GroupHasherThread : Thread
     void on_progress(int curr, int total)
     {
         current++;
-        //writeln(curr, " ", total);
-        //this.current = curr;
-        //this.total = total;
     }
 
     float get_progress()
     {
-        return cast(float) current / cast(float) total;
+        int total_real = total * 2; // *2 because of k.
+        return cast(float) current / (cast(float) total_real);
     }
 }
 
