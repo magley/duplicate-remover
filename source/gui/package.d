@@ -213,7 +213,7 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
 extern (C) int cb_btn_run_clicked(Ihandle* self)
 {
     P.worker = new FinderAndRemoverThread(P.directory, P.worker_count);
-    P.worker.run();
+    P.worker.start();
     return IUP_DEFAULT;
 }
 
