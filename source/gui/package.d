@@ -253,6 +253,10 @@ class FinderAndRemoverThread : Thread
     {
         writeln("Begin ", dir, " with ", workers, " threads...");
 
+        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
+
         sw.start();
 
         groups = group_files(dir);
@@ -262,6 +266,10 @@ class FinderAndRemoverThread : Thread
         collisions = hash_groups_parallel(groups, workers);
         collision_time_ms = sw.peek().total!"msecs"();
         sw.reset();
+
+        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
 
         finish();
     }
