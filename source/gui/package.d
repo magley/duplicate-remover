@@ -83,7 +83,11 @@ void main_gui()
     IupSetAttribute(run_progress, "VALUE", "0");
     IupSetHandle("run_progress", run_progress);
 
-    Ihandle* run_container = IupVbox(btn_run, run_progress, null);
+    Ihandle* run_time = IupLabel("");
+    IupSetAttribute(run_time, "EXPAND", "HORIZONTAL");
+    IupSetHandle("run_time", run_time);
+
+    Ihandle* run_container = IupVbox(btn_run, run_progress, run_time, null);
     IupSetHandle("run_container", run_container);
 
     Ihandle* main_vbox = IupVbox(setup_frame, run_container, null);
@@ -269,8 +273,6 @@ class FinderAndRemoverThread : Thread
 
     private void run()
     {
-        writeln("Begin ", dir, " with ", worker_count, " threads...");
-
         IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
@@ -283,12 +285,12 @@ class FinderAndRemoverThread : Thread
         sw.reset();
 
         worker = new GroupsHasher(groups, worker_count);
-        progress = new ProgressThread(worker);
+        progress = new ProgressThread(this, worker);
 
         progress.start();
         worker.run();
+
         collisions = worker.collisions;
-        // collisions = hash_groups_parallel(groups, worker_count);
 
         progress.join();
 
@@ -299,6 +301,8 @@ class FinderAndRemoverThread : Thread
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
+        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", format("Time: %ds", time_to_string(
+                total_time_ms)).toStringz());
 
         finish();
     }
@@ -312,7 +316,7 @@ class FinderAndRemoverThread : Thread
                 conflicing_files++;
         }
 
-        writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
+        // writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
         writeln("Total time: ", total_time_ms(), "ms (", total_time_ms() / 1000.0, "s)");
     }
 }
@@ -320,9 +324,11 @@ class FinderAndRemoverThread : Thread
 class ProgressThread : Thread
 {
     GroupsHasher worker;
+    FinderAndRemoverThread context;
 
-    this(GroupsHasher worker)
+    this(FinderAndRemoverThread context, GroupsHasher worker)
     {
+        this.context = context;
         this.worker = worker;
         this.isDaemon(true);
         super(&run);
@@ -341,11 +347,37 @@ class ProgressThread : Thread
             int new_val = cast(int)(max * p);
             IupSetStrAttribute(run_progress, "VALUE", to!string(new_val).toStringz());
 
-            if (p >= 1.0)
-            {
-                break;
-            }
+            ulong t_msecs = context.sw.peek().total!"msecs"();
+            IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", time_to_string(t_msecs).toStringz());
         }
 
+        ulong t_msecs = context.sw.peek().total!"msecs"();
+        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", time_to_string(t_msecs).toStringz());
     }
+}
+
+string time_to_string(ulong milisecs)
+{
+    ulong S = 1000;
+    ulong M = 60 * S;
+    ulong H = 60 * M;
+
+    ulong h = milisecs / H;
+    ulong m = (milisecs - (h * H)) / M;
+    ulong s = (milisecs - (m * M)) / S;
+    ulong ms = (milisecs - (s * S)) / 1;
+
+    if (milisecs < S)
+    {
+        return format("%dms", ms);
+    }
+    if (milisecs < M)
+    {
+        return format("%02ds", s);
+    }
+    if (milisecs < H)
+    {
+        return format("%02d:%02d", m, s);
+    }
+    return format("%02d:%02d:%02d", h, m, s);
 }
