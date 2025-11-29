@@ -97,7 +97,7 @@ extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
     Ihandle* file_dlg = IupFileDlg();
 
     IupSetAttribute(file_dlg, "DIALOGTYPE", "DIR");
-    IupSetAttribute(file_dlg, "DIRECTORY", P.directory.toStringz());
+    IupSetStrAttribute(file_dlg, "DIRECTORY", P.directory.toStringz());
     IupSetAttribute(file_dlg, "TITLE", "Open Directory");
 
     IupPopup(file_dlg, IUP_CURRENT, IUP_CURRENT);
@@ -111,7 +111,7 @@ extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
 
         // Show opened directory
         Ihandle* dir_pick_label = IupGetHandle("dir_pick_label");
-        IupSetAttribute(dir_pick_label, "VALUE", dir_cstr);
+        IupSetStrAttribute(dir_pick_label, "VALUE", dir_cstr);
 
         // Show directory info
         {
@@ -119,13 +119,13 @@ extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
             import std.format;
 
             DirectoryInfo dirinfo = get_directory_info(P.directory);
-            string info_str = format(
+            string dir_info = format(
                 "Size: %s, Files: %d, Folders: %d",
                 to_size_byte_unit(dirinfo.size),
                 dirinfo.files,
                 dirinfo.folders
             );
-            IupSetAttribute(IupGetHandle("dir_info_label"), "TITLE", info_str.toStringz());
+            IupSetStrAttribute(IupGetHandle("dir_info_label"), "TITLE", dir_info.toStringz());
         }
     }
     IupDestroy(file_dlg);
@@ -214,7 +214,7 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
         // Do nothing, keep P.worker_count
     }
 
-    IupSetAttribute(self, "VALUE", to!string(P.worker_count).toStringz);
+    IupSetStrAttribute(self, "VALUE", to!string(P.worker_count).toStringz);
 
     return IUP_DEFAULT;
 }
