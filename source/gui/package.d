@@ -301,8 +301,10 @@ class FinderAndRemoverThread : Thread
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
-        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", format("Time: %ds", time_to_string(
-                total_time_ms)).toStringz());
+        IupSetStrAttribute(
+            IupGetHandle("run_time"), "TITLE",
+            format("Time: %s", time_to_string(total_time_ms)).toStringz()
+        );
 
         finish();
     }
@@ -315,8 +317,7 @@ class FinderAndRemoverThread : Thread
             foreach (f; c)
                 conflicing_files++;
         }
-
-        // writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
+        writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
         writeln("Total time: ", total_time_ms(), "ms (", total_time_ms() / 1000.0, "s)");
     }
 }
