@@ -19,6 +19,7 @@
 		"lib/iupgl",
 		"lib/iupimglib",
 		"lib/iup_scintilla",
+		"lib/iupcontrols",
 		"user32",
 		"gdi32",
 		"comctl32",

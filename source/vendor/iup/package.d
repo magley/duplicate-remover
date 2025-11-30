@@ -4,6 +4,7 @@ public import vendor.iup.iupgl;
 public import vendor.iup.iup_scintilla;
 public import vendor.iup.iupdef;
 public import vendor.iup.iupkey;
+public import vendor.iup.iupcontrols;
 
 extern (C)
 {

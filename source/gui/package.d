@@ -29,17 +29,25 @@ void main_gui()
     P = new ProgramState();
 
     IupOpen(null, null);
+    IupImageLibOpen();
+    IupControlsOpen();
+
+    // ========================================================================
+    // Configure
+    // ========================================================================
 
     Ihandle* dir_pick_label = IupText(null);
     IupSetAttribute(dir_pick_label, "ACTIVE", "NO");
-    IupSetAttribute(dir_pick_label, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(dir_pick_label, "EXPAND", "YES");
     IupSetHandle("dir_pick_label", dir_pick_label);
 
-    Ihandle* dir_pick_btn = IupButton("Select...", null);
+    Ihandle* dir_pick_btn = IupButton("", null);
     IupSetCallback(dir_pick_btn, "ACTION", &cb_open_directory_picker_dialog);
+    IupSetStrAttribute(dir_pick_btn, "IMAGE", "IUP_FileOpen");
     IupSetHandle("dir_pick_btn", dir_pick_btn);
 
     Ihandle* dir_pick_container = IupHbox(dir_pick_label, dir_pick_btn, null);
+    IupSetAttribute(dir_pick_container, "EXPAND", "HORIZONTAL");
     IupSetHandle("dir_pick_container", dir_pick_container);
 
     Ihandle* dir_info_label = IupLabel("Open a directory to get started");
@@ -71,12 +79,28 @@ void main_gui()
     IupSetAttribute(setup_frame, "TITLE", "Configuration");
     IupSetAttribute(setup_frame, "SUNKEN", "YES");
 
+    // ========================================================================
+    // Run
+    // ========================================================================
+
     Ihandle* btn_run = IupButton("Begin", null);
-    IupSetAttribute(btn_run, "PADDING", "12x5");
+    IupSetStrAttribute(btn_run, "IMAGE", "IUP_ActionOk");
     IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
     IupSetHandle("btn_run", btn_run);
 
-    Ihandle* run_progress = IupProgressBar();
+    Ihandle* btn_cancel = IupButton("Cancel", null);
+    IupSetAttribute(btn_cancel, "ACTIVE", "NO");
+    IupSetStrAttribute(btn_cancel, "IMAGE", "IUP_ActionCancel");
+    IupSetCallback(btn_cancel, "ACTION", &cb_btn_cancel_clicked);
+    IupSetHandle("btn_cancel", btn_cancel);
+
+    Ihandle* run_hbox = IupHbox(
+        btn_run, //btn_cancel,
+        null
+    );
+    IupSetHandle("run_hbox", run_hbox);
+
+    Ihandle* run_progress = IupGauge();
     IupSetAttribute(run_progress, "EXPAND", "HORIZONTAL");
     IupSetAttribute(run_progress, "DASHED", "NO");
     IupSetAttribute(run_progress, "MAX", "100");
@@ -87,21 +111,53 @@ void main_gui()
     IupSetAttribute(run_time, "EXPAND", "HORIZONTAL");
     IupSetHandle("run_time", run_time);
 
-    Ihandle* run_container = IupVbox(btn_run, run_progress, run_time, null);
+    Ihandle* run_container = IupVbox(run_hbox, run_progress, run_time, null);
     IupSetHandle("run_container", run_container);
 
-    Ihandle* main_vbox = IupVbox(setup_frame, run_container, null);
+    Ihandle* runner_frame = IupFrame(run_container);
+    IupSetHandle("runner_frame", runner_frame);
+    IupSetAttribute(runner_frame, "TITLE", "Run");
+    IupSetAttribute(runner_frame, "SUNKEN", "YES");
+
+    // ========================================================================
+    // Results
+    // ========================================================================
+
+    Ihandle* res_groups_lbl = IupLabel("Collision groups:");
+    IupSetAttribute(res_groups_lbl, "EXPAND", "HORIZONTAL");
+    IupSetHandle("res_groups_lbl", res_groups_lbl);
+
+    Ihandle* res_filecnt_lbl = IupLabel("Conflicting files:");
+    IupSetAttribute(res_filecnt_lbl, "EXPAND", "HORIZONTAL");
+    IupSetHandle("res_filecnt_lbl", res_filecnt_lbl);
+
+    Ihandle* results_list = IupMatrixList();
+    IupSetHandle("results_list", results_list);
+
+    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, null);
+    IupSetHandle("results_container", results_container);
+
+    Ihandle* results_frame = IupFrame(results_container);
+    IupSetHandle("results_frame", results_frame);
+    IupSetAttribute(results_frame, "TITLE", "Results");
+    IupSetAttribute(results_frame, "SUNKEN", "YES");
+
+    // ========================================================================
+    // Main
+    // ========================================================================
+
+    Ihandle* main_vbox = IupVbox(setup_frame, runner_frame, results_frame, null);
     IupSetHandle("main_vbox", main_vbox);
 
     Ihandle* main_dlg = IupDialog(main_vbox);
     IupSetAttribute(main_dlg, "TITLE", "Duplicate Remover");
-    IupSetAttribute(main_dlg, "MINSIZE", "200x200");
+    IupSetAttribute(main_dlg, "MINSIZE", "200x250");
     IupSetAttribute(main_dlg, "MARGIN", "3x3");
     IupSetHandle("main", main_dlg);
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
 
-    IupSetAttribute(main_dlg, "RASTERSIZE", "300x300");
+    IupSetAttribute(main_dlg, "RASTERSIZE", "300x350");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
 
@@ -243,6 +299,15 @@ extern (C) int cb_btn_run_clicked(Ihandle* self)
     return IUP_DEFAULT;
 }
 
+extern (C) int cb_btn_cancel_clicked(Ihandle* self)
+{
+    if (P.worker !is null)
+    {
+        //
+    }
+    return IUP_DEFAULT;
+}
+
 class FinderAndRemoverThread : Thread
 {
     // Input
@@ -276,7 +341,11 @@ class FinderAndRemoverThread : Thread
         IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
+        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", "");
+        IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE", "Collision groups:");
+        IupSetStrAttribute(IupGetHandle("res_filecnt_lbl"), "TITLE", "Conflicting files:");
 
         sw.start();
 
@@ -297,28 +366,27 @@ class FinderAndRemoverThread : Thread
         collision_time_ms = sw.peek().total!"msecs"();
         sw.reset();
 
-        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
-        IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
-        IupSetStrAttribute(
-            IupGetHandle("run_time"), "TITLE",
-            format("Time: %s", time_to_string(total_time_ms)).toStringz()
-        );
-
-        finish();
-    }
-
-    private void finish()
-    {
         uint conflicing_files = 0;
         foreach (c; collisions)
         {
             foreach (f; c)
                 conflicing_files++;
         }
-        writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
-        writeln("Total time: ", total_time_ms(), "ms (", total_time_ms() / 1000.0, "s)");
+
+        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
+        IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
+        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
+            format("Time: %s", time_to_string(total_time_ms)).toStringz()
+        );
+        IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE",
+            format("Collision groups: %d", collisions.length).toStringz()
+        );
+        IupSetStrAttribute(IupGetHandle("res_filecnt_lbl"), "TITLE",
+            format("Conflicting files: %d", conflicing_files).toStringz()
+        );
     }
 }
 
@@ -349,11 +417,19 @@ class ProgressThread : Thread
             IupSetStrAttribute(run_progress, "VALUE", to!string(new_val).toStringz());
 
             ulong t_msecs = context.sw.peek().total!"msecs"();
-            IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", time_to_string(t_msecs).toStringz());
+            IupSetStrAttribute(
+                IupGetHandle("run_time"),
+                "TITLE",
+                ("Time: " ~ time_to_string(t_msecs)).toStringz()
+            );
         }
 
         ulong t_msecs = context.sw.peek().total!"msecs"();
-        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", time_to_string(t_msecs).toStringz());
+        IupSetStrAttribute(
+            IupGetHandle("run_time"),
+            "TITLE",
+            ("Time: " ~ time_to_string(t_msecs)).toStringz()
+        );
     }
 }
 
