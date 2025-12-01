@@ -11,6 +11,8 @@ import core.thread.osthread;
 
 import vendor.iup;
 
+import gui.exporter;
+
 import util;
 import finder;
 import hasher;
@@ -30,6 +32,12 @@ ProgramState P;
 extern (C) int on_results_list_add_items(Ihandle* ih, char* s, int i, double d, void* p)
 {
     add_items(P.worker.collisions);
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_on_export_btn_clicked(Ihandle* self)
+{
+    open_export_dialog();
     return IUP_DEFAULT;
 }
 
@@ -197,6 +205,9 @@ void main_gui()
     IupSetAttribute(res_filecnt_lbl, "EXPAND", "HORIZONTAL");
     IupSetHandle("res_filecnt_lbl", res_filecnt_lbl);
 
+    Ihandle* export_btn = IupButton("Export...", null);
+    IupSetCallback(export_btn, "ACTION", &cb_on_export_btn_clicked);
+
     Ihandle* results_list = IupVbox(null);
     IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
     IupSetHandle("results_list", results_list);
@@ -204,7 +215,7 @@ void main_gui()
 
     Ihandle* results_list_scroll = IupScrollBox(results_list);
 
-    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, results_list_scroll, null);
+    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, export_btn, results_list_scroll, null);
     IupSetHandle("results_container", results_container);
 
     Ihandle* results_frame = IupFrame(results_container);
