@@ -4,11 +4,14 @@ import std.stdio;
 import std.conv;
 import std.string;
 import std.datetime.stopwatch;
-import core.thread.osthread;
+import std.file;
+import std.path;
 import std.algorithm;
+import core.thread.osthread;
 
 import vendor.iup;
 
+import util;
 import finder;
 import hasher;
 
@@ -23,6 +26,48 @@ class ProgramState
 }
 
 ProgramState P;
+
+void add_items(string[][] collisions)
+{
+    Ihandle* list = IupGetHandle("results_list");
+    foreach (size_t i, string[] group; collisions)
+    {
+        Ihandle*[] children;
+
+        foreach (size_t j, string file; group)
+        {
+            const ulong size = getSize(safepath(file));
+            const string size_str = to_size_byte_unit(size);
+            const string path_rel = relativePath(file, P.directory);
+            const string label = format("(%s) %s", size_str, path_rel);
+
+            Ihandle* checkbox = IupToggle(label.toStringz(), null);
+            IupSetAttribute(checkbox, "EXPAND", "HORIZONTAL");
+            if (j == 0)
+            {
+                IupSetAttribute(checkbox, "VALUE", "ON");
+            }
+
+            Ihandle* item = IupHbox(checkbox, null);
+            IupSetAttribute(item, "EXPAND", "HORIZONTAL");
+
+            children ~= item;
+        }
+
+        children ~= null;
+        Ihandle* vbox = IupVboxv(children.ptr);
+        IupSetAttribute(vbox, "EXPAND", "HORIZONTAL");
+
+        Ihandle* frame = IupFrame(vbox);
+        IupSetStrAttribute(frame, "TITLE", format("Group #%d", i + 1).toStringz());
+        IupSetAttribute(frame, "EXPAND", "HORIZONTAL");
+
+        IupAppend(list, frame);
+        IupMap(frame);
+    }
+
+    IupRefresh(list);
+}
 
 void main_gui()
 {
@@ -131,10 +176,13 @@ void main_gui()
     IupSetAttribute(res_filecnt_lbl, "EXPAND", "HORIZONTAL");
     IupSetHandle("res_filecnt_lbl", res_filecnt_lbl);
 
-    Ihandle* results_list = IupMatrixList();
+    Ihandle* results_list = IupVbox(null);
+    IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
     IupSetHandle("results_list", results_list);
 
-    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, null);
+    Ihandle* results_list_scroll = IupScrollBox(results_list);
+
+    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, results_list_scroll, null);
     IupSetHandle("results_container", results_container);
 
     Ihandle* results_frame = IupFrame(results_container);
