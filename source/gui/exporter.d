@@ -5,18 +5,12 @@ import std.string;
 import std.conv;
 import vendor.iup;
 import gui;
+import exporting;
 
 private class ExportState
 {
     FileType mode = FileType.JSON;
     string[][] collisions = [];
-}
-
-enum FileType
-{
-    JSON = "JSON",
-    XML = "XML",
-    CSV = "CSV"
 }
 
 private const(FileType[]) modes = [FileType.JSON, FileType.XML, FileType.CSV];
@@ -81,10 +75,7 @@ void open_export_dialog()
 extern (C) int modes_list_VALUECHANGED_CB(Ihandle* self)
 {
     FileType val = to!FileType(to!string(IupGetAttribute(self, "VALUESTRING")));
-
     E.mode = val;
-    writeln(E.mode);
-
     return IUP_DEFAULT;
 }
 
@@ -92,44 +83,37 @@ extern (C) int cb_open_export_save_dialog(Ihandle* self)
 {
     string[2][] filters_arr = get_filters(E.mode);
     string filters = filters_to_filterstring(filters_arr);
+    string file_name = format("Untitled.%s", filters_arr[0][0][2 .. $]); // skip '*.'
 
     Ihandle* dlg = IupFileDlg();
 
     IupSetStrAttribute(dlg, "DIALOGTYPE", "SAVE");
     IupSetStrAttribute(dlg, "TITLE", "Save to file");
     IupSetStrAttribute(dlg, "EXTFILTER", filters.toStringz());
+    IupSetStrAttribute(dlg, "FILE", file_name.toStringz());
     IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
 
     if (IupGetInt(dlg, "STATUS") != -1)
     {
-        string fname = to!string(IupGetAttribute(dlg, "VALUE"));
-        export_results(fname);
+        string path = to!string(IupGetAttribute(dlg, "VALUE"));
+        do_export(path);
     }
 
     IupDestroy(dlg);
     return IUP_DEFAULT;
 }
 
-private void export_results(string fname)
+private void do_export(string fname)
 {
     export_results(fname, E.mode, E.collisions);
-}
-
-// TODO: This is generic in regards to the GUI and CLI.
-private void export_results(string fname, string mode, string[][] collisions)
-{
-    writeln("Save ", fname, " as ", mode);
 }
 
 private string[2][] get_filters(FileType mode)
 {
     string[2][] result;
 
-    switch (mode)
-        with (FileType)
+    final switch (mode) with (FileType)
     {
-    default:
-        break;
     case JSON:
         result ~= [["*.json", "JSON (*.json)"]];
         break;
