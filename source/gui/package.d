@@ -27,6 +27,12 @@ class ProgramState
 
 ProgramState P;
 
+extern (C) int on_results_list_add_items(Ihandle* ih, char* s, int i, double d, void* p)
+{
+    add_items(P.worker.collisions);
+    return IUP_DEFAULT;
+}
+
 void add_items(string[][] collisions)
 {
     Ihandle* list = IupGetHandle("results_list");
@@ -179,6 +185,7 @@ void main_gui()
     Ihandle* results_list = IupVbox(null);
     IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
     IupSetHandle("results_list", results_list);
+    IupSetCallback(results_list, "POSTMESSAGE_CB", cast(Icallback)&on_results_list_add_items);
 
     Ihandle* results_list_scroll = IupScrollBox(results_list);
 
@@ -435,6 +442,8 @@ class FinderAndRemoverThread : Thread
         IupSetStrAttribute(IupGetHandle("res_filecnt_lbl"), "TITLE",
             format("Conflicting files: %d", conflicing_files).toStringz()
         );
+
+        IupPostMessage(IupGetHandle("results_list"), null, 0, 0.0, null);
     }
 }
 
