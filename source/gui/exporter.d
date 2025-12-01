@@ -8,9 +8,18 @@ import gui;
 
 private class ExportState
 {
-    string mode = "";
+    FileType mode = FileType.JSON;
     string[][] collisions = [];
 }
+
+enum FileType
+{
+    JSON = "JSON",
+    XML = "XML",
+    CSV = "CSV"
+}
+
+private const(FileType[]) modes = [FileType.JSON, FileType.XML, FileType.CSV];
 
 private ExportState E;
 
@@ -29,14 +38,13 @@ void open_export_dialog()
     E = new ExportState();
     E.collisions = P.worker.collisions;
 
-    const(string[]) modes = ["JSON", "XML", "CSV"];
-
     Ihandle* lbl_select_format = IupLabel("Export as:");
 
     Ihandle* modes_list = IupList(null);
     IupSetAttribute(modes_list, "DROPDOWN", "YES");
     IupSetAttribute(modes_list, "EXPAND", "HORIZONTAL");
     IupSetAttribute(modes_list, "VALUE", "1");
+    IupSetCallback(modes_list, "VALUECHANGED_CB", &modes_list_VALUECHANGED_CB);
     E.mode = modes[0];
     foreach (size_t i, string mode; modes)
     {
@@ -72,7 +80,7 @@ void open_export_dialog()
 
 extern (C) int modes_list_VALUECHANGED_CB(Ihandle* self)
 {
-    string val = to!string(IupGetAttribute(self, "VALUESTRING"));
+    FileType val = to!FileType(to!string(IupGetAttribute(self, "VALUESTRING")));
 
     E.mode = val;
     writeln(E.mode);
@@ -113,21 +121,22 @@ private void export_results(string fname, string mode, string[][] collisions)
     writeln("Save ", fname, " as ", mode);
 }
 
-private string[2][] get_filters(string mode)
+private string[2][] get_filters(FileType mode)
 {
     string[2][] result;
 
     switch (mode)
+        with (FileType)
     {
     default:
         break;
-    case "JSON":
+    case JSON:
         result ~= [["*.json", "JSON (*.json)"]];
         break;
-    case "XML":
+    case XML:
         result ~= [["*.xml", "XML (*.xml)"]];
         break;
-    case "CSV":
+    case CSV:
         result ~= [["*.csv", "Comma separated values (*.csv)"]];
         break;
     }
