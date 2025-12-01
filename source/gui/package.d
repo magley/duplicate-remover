@@ -36,6 +36,21 @@ extern (C) int on_results_list_add_items(Ihandle* ih, char* s, int i, double d, 
 void add_items(string[][] collisions)
 {
     Ihandle* list = IupGetHandle("results_list");
+
+    // 1 Delete old items.
+
+    int child_count = IupGetChildCount(list);
+    for (int i = child_count - 1; i >= 0; i--)
+    {
+        Ihandle* c = IupGetChild(list, i);
+        IupDetach(c);
+        IupDestroy(c);
+    }
+
+    IupRefresh(list);
+
+    // 2 Append new items.
+
     foreach (size_t i, string[] group; collisions)
     {
         Ihandle*[] children;
