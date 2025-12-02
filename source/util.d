@@ -1,6 +1,7 @@
 module util;
 
 import std.algorithm;
+import std.traits;
 
 T[][] split_evenly(T)(T[] arr, ulong parts)
 {
@@ -39,4 +40,16 @@ string safepath(string path)
     {
         return path;
     }
+}
+
+T stringValToEnum(T)(string s)
+{
+    foreach (member; __traits(allMembers, T))
+    {
+        enum value = __traits(getMember, T, member);
+        static if (is(typeof(value) == T))
+            if (value == s)
+                return value;
+    }
+    throw new Exception("Unknown " ~ T.stringof ~ ": " ~ s);
 }

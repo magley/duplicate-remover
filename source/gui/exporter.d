@@ -6,6 +6,8 @@ import std.conv;
 import vendor.iup;
 import gui;
 import exporting;
+import std.traits;
+import util;
 
 private class ExportState
 {
@@ -13,9 +15,9 @@ private class ExportState
     string[][] collisions = [];
 }
 
-private const(FileType[]) modes = [FileType.JSON, FileType.XML, FileType.CSV];
-
 private ExportState E;
+
+private const(FileType[]) modes = [EnumMembers!FileType];
 
 void open_export_dialog()
 {
@@ -74,8 +76,16 @@ void open_export_dialog()
 
 extern (C) int modes_list_VALUECHANGED_CB(Ihandle* self)
 {
-    FileType val = to!FileType(to!string(IupGetAttribute(self, "VALUESTRING")));
-    E.mode = val;
+    string s = to!string(IupGetAttribute(self, "VALUESTRING"));
+    try
+    {
+        FileType val = stringValToEnum!FileType(s);
+        E.mode = val;
+    }
+    catch (Exception e)
+    {
+        writeln(e);
+    }
     return IUP_DEFAULT;
 }
 
@@ -115,6 +125,9 @@ private string[2][] get_filters(FileType mode)
     final switch (mode) with (FileType)
     {
     case JSON:
+        result ~= [["*.json", "JSON (*.json)"]];
+        break;
+    case JSON_Simple:
         result ~= [["*.json", "JSON (*.json)"]];
         break;
     case XML:

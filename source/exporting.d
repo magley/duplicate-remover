@@ -9,6 +9,7 @@ import util;
 enum FileType
 {
     JSON = "JSON",
+    JSON_Simple = "JSON Simple",
     XML = "XML",
     CSV = "CSV"
 }
@@ -19,6 +20,9 @@ void export_results(string fname, FileType mode, string[][] collisions)
     {
     case JSON:
         export_json(fname, collisions);
+        return;
+    case JSON_Simple:
+        export_json_simple(fname, collisions);
         return;
     case XML:
         break;
@@ -46,5 +50,11 @@ private void export_json(string fname, string[][] collisions)
         j["groups"].array() ~= o;
     }
 
+    std.file.write(fname, j.toPrettyString(JSONOptions.preserveObjectOrder));
+}
+
+private void export_json_simple(string fname, string[][] collisions)
+{
+    JSONValue j = collisions;
     std.file.write(fname, j.toPrettyString(JSONOptions.preserveObjectOrder));
 }
