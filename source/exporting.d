@@ -16,12 +16,31 @@ enum FileType
     CSV = "CSV"
 }
 
-void export_results(string fname, FileType mode, string[][] collisions)
+struct ExportSettings_JSON
+{
+    enum QuickInclude
+    {
+        None,
+        LargestInEachGroup,
+        SmallestInEachGroup,
+        AllButLargestInEachGroup,
+        AllButSmallestInEachGroup,
+    }
+
+    QuickInclude quick_include = QuickInclude.LargestInEachGroup;
+}
+
+struct ExportSettings
+{
+    ExportSettings_JSON json;
+}
+
+void export_results(string fname, FileType mode, string[][] collisions, ExportSettings settings)
 {
     final switch (mode) with (FileType)
     {
     case JSON:
-        export_json(fname, collisions);
+        export_json(fname, collisions, settings.json);
         return;
     case JSON_Simple:
         export_json_simple(fname, collisions);
@@ -54,10 +73,12 @@ private struct FileWithSize
     }
 }
 
-private void export_json(string fname, string[][] collisions)
+private void export_json(string fname, string[][] collisions, ExportSettings_JSON settings)
 {
     JSONValue j;
     j["groups"] = JSONValue.emptyArray;
+
+    FileWithSize[][] groups_with_size;
 
     foreach (size_t i, string[] group; collisions)
     {
@@ -80,6 +101,45 @@ private void export_json(string fname, string[][] collisions)
             .array;
         o["totalSize"] = size_total;
         j["groups"].array() ~= o;
+        groups_with_size ~= files_with_size;
+    }
+
+    final switch (settings.quick_include) with (ExportSettings_JSON.QuickInclude)
+    {
+    case None:
+        break;
+    case LargestInEachGroup:
+        j["quick_include"] = groups_with_size.map!(g => g[0].filename).array;
+        break;
+    case SmallestInEachGroup:
+        j["quick_include"] = groups_with_size.map!(g => g[$ - 1].filename).array;
+        break;
+    case AllButLargestInEachGroup:
+        string[] s;
+        foreach (group; groups_with_size)
+        {
+            foreach (size_t i, f; group)
+            {
+                if (i == 0)
+                    continue;
+                s ~= f.filename;
+            }
+        }
+        j["quick_include"] = s;
+        break;
+    case AllButSmallestInEachGroup:
+        string[] s;
+        foreach (group; groups_with_size)
+        {
+            foreach (size_t i, f; group)
+            {
+                if (i == group.length - 1U)
+                    continue;
+                s ~= f.filename;
+            }
+        }
+        j["quick_include"] = s;
+        break;
     }
 
     std.file.write(fname, j.toPrettyString(JSONOptions.preserveObjectOrder));

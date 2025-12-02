@@ -13,6 +13,7 @@ private class ExportState
 {
     FileType mode = FileType.JSON;
     string[][] collisions = [];
+    ExportSettings settings;
 }
 
 private ExportState E;
@@ -115,7 +116,7 @@ extern (C) int cb_open_export_save_dialog(Ihandle* self)
 
 private void do_export(string fname)
 {
-    export_results(fname, E.mode, E.collisions);
+    export_results(fname, E.mode, E.collisions, E.settings);
 }
 
 private string[2][] get_filters(FileType mode)
