@@ -55,8 +55,6 @@ void add_items(string[][] collisions)
         IupDestroy(c);
     }
 
-    IupRefresh(list);
-
     // 2 Append new items.
 
     foreach (size_t i, string[] group; collisions)
@@ -207,6 +205,7 @@ void main_gui()
 
     Ihandle* export_btn = IupButton("Export...", null);
     IupSetCallback(export_btn, "ACTION", &cb_on_export_btn_clicked);
+    IupSetAttribute(export_btn, "IMAGE", "IUP_EditCopy");
 
     Ihandle* results_list = IupVbox(null);
     IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
@@ -232,15 +231,17 @@ void main_gui()
 
     Ihandle* main_dlg = IupDialog(main_vbox);
     IupSetAttribute(main_dlg, "TITLE", "Duplicate Remover");
-    IupSetAttribute(main_dlg, "MINSIZE", "200x250");
+    IupSetAttribute(main_dlg, "MINSIZE", "400x400");
     IupSetAttribute(main_dlg, "MARGIN", "3x3");
     IupSetHandle("main", main_dlg);
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
 
-    IupSetAttribute(main_dlg, "RASTERSIZE", "300x350");
+    IupSetAttribute(main_dlg, "RASTERSIZE", "400x400");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
+
+    IupRefresh(results_list);
 
     IupMainLoop();
     IupClose();
