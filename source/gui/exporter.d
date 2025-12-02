@@ -57,9 +57,12 @@ void open_export_dialog()
     IupSetAttribute(export_btn, "MARGIN", "5x5");
     IupSetCallback(export_btn, "ACTION", &cb_open_export_save_dialog);
 
+    Ihandle* settins_json = create_gui_settings_json();
+
     Ihandle* vbox = IupVbox(
         lbl_select_format,
         modes_list,
+        settins_json,
         IupFill(),
         export_btn,
         null
@@ -73,6 +76,40 @@ void open_export_dialog()
 
     IupPopup(dlg, IUP_CENTER, IUP_CENTER);
     IupDestroy(dlg);
+}
+
+private Ihandle* create_gui_settings_json()
+{
+    Ihandle*[] buttons;
+
+    buttons ~= IupToggle("None", null);
+    buttons ~= IupToggle("Largest file in each group", null);
+    buttons ~= IupToggle("Smallest file in each group", null);
+    buttons ~= IupToggle("All expect largest file in each group", null);
+    buttons ~= IupToggle("All expect smallest file in each group", null);
+
+    buttons ~= null;
+    Ihandle* radio_vbox = IupVboxv(buttons.ptr);
+    Ihandle* radio = IupRadio(radio_vbox);
+    IupSetHandle("json__include_list_radio", radio);
+    Ihandle* settings_vbox = IupVbox(radio, null);
+    Ihandle* settings_json = IupFrame(settings_vbox);
+    IupSetAttribute(settings_json, "TITLE", "Also include list:");
+    IupSetHandle("settings_json", settings_json);
+    return settings_json;
+}
+
+private int get_radio_index(string radio_handle)
+{
+    Ihandle* radio = IupGetHandle(radio_handle.toStringz());
+    string n = to!string(IupGetAttribute(radio, "VALUE"));
+    Ihandle* selected = IupGetHandle(n.toStringz());
+    return IupGetChildPos(IupGetChild(radio, 0), selected);
+}
+
+private T get_radio_enum(T)(string radio_handle)
+{
+    return [EnumMembers!T][get_radio_index(radio_handle)];
 }
 
 extern (C) int modes_list_VALUECHANGED_CB(Ihandle* self)
@@ -116,6 +153,10 @@ extern (C) int cb_open_export_save_dialog(Ihandle* self)
 
 private void do_export(string fname)
 {
+    E.settings.json.quick_include = get_radio_enum!(
+        ExportSettings_JSON.QuickInclude
+    )("json__include_list_radio");
+
     export_results(fname, E.mode, E.collisions, E.settings);
 }
 
