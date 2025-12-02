@@ -57,12 +57,25 @@ void open_export_dialog()
     IupSetAttribute(export_btn, "MARGIN", "5x5");
     IupSetCallback(export_btn, "ACTION", &cb_open_export_save_dialog);
 
-    Ihandle* settins_json = create_gui_settings_json();
+    IupSetHandle(FileType.JSON.toStringz(), create_gui_settings_json());
+    IupSetHandle(FileType.JSON_Simple.toStringz(), IupVbox(null));
+    IupSetHandle(FileType.XML.toStringz(), IupVbox(null));
+    IupSetHandle(FileType.CSV.toStringz(), IupVbox(null));
+
+    Ihandle* settings_frame = IupZbox(
+        IupGetHandle(FileType.JSON.toStringz()),
+        IupGetHandle(FileType.JSON_Simple.toStringz()),
+        IupGetHandle(FileType.XML.toStringz()),
+        IupGetHandle(FileType.CSV.toStringz()),
+        null
+    );
+    IupSetHandle("settings_frame", settings_frame);
+    IupSetStrAttribute(settings_frame, "VALUE", FileType.JSON.toStringz());
 
     Ihandle* vbox = IupVbox(
         lbl_select_format,
         modes_list,
-        settins_json,
+        settings_frame,
         IupFill(),
         export_btn,
         null
@@ -72,7 +85,7 @@ void open_export_dialog()
     IupSetAttribute(dlg, "TITLE", "Export results");
     IupSetAttribute(dlg, "SIMULATEMODAL", "YES");
     IupSetAttribute(dlg, "MINSIZE", "300x300");
-    IupSetAttribute(dlg, "MARGIN", "3x3");
+    IupSetAttribute(dlg, "MARGIN", "10x10");
 
     IupPopup(dlg, IUP_CENTER, IUP_CENTER);
     IupDestroy(dlg);
@@ -90,11 +103,16 @@ private Ihandle* create_gui_settings_json()
 
     buttons ~= null;
     Ihandle* radio_vbox = IupVboxv(buttons.ptr);
+
     Ihandle* radio = IupRadio(radio_vbox);
     IupSetHandle("json__include_list_radio", radio);
+
     Ihandle* settings_vbox = IupVbox(radio, null);
+    IupSetAttribute(settings_vbox, "EXPAND", "HORIZONTAL");
+
     Ihandle* settings_json = IupFrame(settings_vbox);
     IupSetAttribute(settings_json, "TITLE", "Also include list:");
+    IupSetAttribute(settings_json, "EXPAND", "HORIZONTAL");
     IupSetHandle("settings_json", settings_json);
     return settings_json;
 }
@@ -119,6 +137,7 @@ extern (C) int modes_list_VALUECHANGED_CB(Ihandle* self)
     {
         FileType val = stringValToEnum!FileType(s);
         E.mode = val;
+        IupSetStrAttribute(IupGetHandle("settings_frame"), "VALUE", val.toStringz());
     }
     catch (Exception e)
     {
