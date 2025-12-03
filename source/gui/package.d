@@ -25,6 +25,8 @@ class ProgramState
     string directory = "";
     int worker_count = 4;
     FinderAndRemoverThread worker = null;
+
+    string[] files_selected = [];
 }
 
 ProgramState P;
@@ -57,6 +59,7 @@ void add_items(string[][] collisions)
 
     // 2 Append new items.
 
+    P.files_selected = [];
     foreach (size_t i, string[] group; collisions)
     {
         Ihandle*[] children;
@@ -72,6 +75,7 @@ void add_items(string[][] collisions)
             IupSetAttribute(checkbox, "EXPAND", "HORIZONTAL");
             if (j == 0)
             {
+                P.files_selected ~= file;
                 IupSetAttribute(checkbox, "VALUE", "ON");
             }
 
@@ -207,6 +211,14 @@ void main_gui()
     IupSetCallback(export_btn, "ACTION", &cb_on_export_btn_clicked);
     IupSetAttribute(export_btn, "IMAGE", "IUP_EditCopy");
 
+    Ihandle* delete_btn = IupButton("Delete", null);
+    IupSetCallback(delete_btn, "ACTION", &cb_on_delete_btn_clicked);
+    IupSetAttribute(delete_btn, "IMAGE", "IUP_EditErase");
+
+    Ihandle* result_btn_box = IupHbox(export_btn, delete_btn, null);
+    IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
+    IupSetHandle("result_btn_box", result_btn_box);
+
     Ihandle* results_list = IupVbox(null);
     IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
     IupSetHandle("results_list", results_list);
@@ -214,7 +226,7 @@ void main_gui()
 
     Ihandle* results_list_scroll = IupScrollBox(results_list);
 
-    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, export_btn, results_list_scroll, null);
+    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, result_btn_box, results_list_scroll, null);
     IupSetHandle("results_container", results_container);
 
     Ihandle* results_frame = IupFrame(results_container);
@@ -388,6 +400,47 @@ extern (C) int cb_btn_cancel_clicked(Ihandle* self)
         //
     }
     return IUP_DEFAULT;
+}
+
+extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
+{
+    ulong file_count = P.files_selected.length;
+    ulong file_size = 0;
+    foreach (string f; P.files_selected)
+    {
+        file_size += getSize(safepath(f));
+    }
+
+    string warning_message = format(
+        "This will delete %d files (%s) from your disk.\nProceed?",
+        file_count,
+        to_size_byte_unit(file_size)
+    );
+
+    Ihandle* dlg = IupMessageDlg();
+    IupSetAttribute(dlg, "DIALOGTYPE", "WARNING");
+    IupSetAttribute(dlg, "TITLE", "Delete files");
+    IupSetAttribute(dlg, "BUTTONS", "OKCANCEL");
+    IupSetStrAttribute(dlg, "VALUE", warning_message.toStringz());
+    IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
+    bool clicked_ok = to!string(IupGetAttribute(dlg, "BUTTONRESPONSE")) == "1";
+
+    if (clicked_ok)
+    {
+        delete_selected_files();
+    }
+
+    IupDestroy(dlg);
+
+    return IUP_DEFAULT;
+}
+
+void delete_selected_files()
+{
+    writeln("Delete...");
+
+    // TODO: Clear program state results.
+    P.files_selected = [];
 }
 
 class FinderAndRemoverThread : Thread
