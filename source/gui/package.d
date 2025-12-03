@@ -437,10 +437,56 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
 
 void delete_selected_files()
 {
-    writeln("Delete...");
+    RemoverThread[] threads;
+    int k = P.worker_count;
+    string[][] file_groups;
+    file_groups.length = k;
 
-    // TODO: Clear program state results.
+    foreach (size_t i, string f; P.files_selected)
+    {
+        size_t size_j = i % k;
+        file_groups[size_j] ~= f;
+    }
+
+    for (int i = 0; i < k; i++)
+    {
+        auto t = new RemoverThread(file_groups[i]);
+        t.start();
+        threads ~= t;
+    }
+
+    foreach (t; threads)
+    {
+        t.join();
+    }
+
     P.files_selected = [];
+}
+
+class RemoverThread : Thread
+{
+    string[] files;
+
+    this(string[] files)
+    {
+        this.files = files;
+        super(&run);
+    }
+
+    void run()
+    {
+        foreach (string f; files)
+        {
+            try
+            {
+                std.file.remove(safepath(f));
+            }
+            catch (Exception e)
+            {
+                writeln(e);
+            }
+        }
+    }
 }
 
 class FinderAndRemoverThread : Thread
