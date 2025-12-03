@@ -427,7 +427,7 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
 
     if (clicked_ok)
     {
-        delete_selected_files();
+        delete_selected_files(P.files_selected, true, P.worker_count);
     }
 
     IupDestroy(dlg);
@@ -435,22 +435,21 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
     return IUP_DEFAULT;
 }
 
-void delete_selected_files()
+void delete_selected_files(string[] files, bool move_to_trash, int thread_count)
 {
     RemoverThread[] threads;
-    int k = P.worker_count;
     string[][] file_groups;
-    file_groups.length = k;
+    file_groups.length = thread_count;
 
-    foreach (size_t i, string f; P.files_selected)
+    foreach (size_t i, string f; files)
     {
-        size_t size_j = i % k;
+        size_t size_j = i % thread_count;
         file_groups[size_j] ~= f;
     }
 
-    for (int i = 0; i < k; i++)
+    for (int i = 0; i < thread_count; i++)
     {
-        auto t = new RemoverThread(file_groups[i]);
+        auto t = new RemoverThread(file_groups[i], move_to_trash);
         t.start();
         threads ~= t;
     }
@@ -459,17 +458,17 @@ void delete_selected_files()
     {
         t.join();
     }
-
-    P.files_selected = [];
 }
 
 class RemoverThread : Thread
 {
     string[] files;
+    bool move_to_trash;
 
-    this(string[] files)
+    this(string[] files, bool move_to_trash)
     {
         this.files = files;
+        this.move_to_trash = move_to_trash;
         super(&run);
     }
 
@@ -479,7 +478,14 @@ class RemoverThread : Thread
         {
             try
             {
-                std.file.remove(safepath(f));
+                if (move_to_trash)
+                {
+                    moveToTrash(f);
+                }
+                else
+                {
+                    std.file.remove(safepath(f));
+                }
             }
             catch (Exception e)
             {

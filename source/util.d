@@ -2,6 +2,8 @@ module util;
 
 import std.algorithm;
 import std.traits;
+import std.utf;
+import std.format;
 
 T[][] split_evenly(T)(T[] arr, ulong parts)
 {
@@ -52,4 +54,32 @@ T stringValToEnum(T)(string s)
                 return value;
     }
     throw new Exception("Unknown " ~ T.stringof ~ ": " ~ s);
+}
+
+void moveToTrash(string path)
+{
+    version (Windows)
+    {
+        import core.sys.windows.shellapi;
+
+        const uint FOF_NO_UI = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NOCONFIRMMKDIR;
+        wstring wFileName = (path ~ "\0\0").toUTF16();
+
+        SHFILEOPSTRUCTW fileOp;
+        fileOp.wFunc = FO_DELETE;
+        fileOp.fFlags = FOF_NO_UI | FOF_ALLOWUNDO;
+        fileOp.pFrom = wFileName.ptr;
+
+        int error = SHFileOperation(&fileOp);
+
+        if (error)
+        {
+            // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shfileoperationa#return-value
+            throw new Exception(format("Could not move %s to trash. Error code %d", path, error));
+        }
+    }
+    else
+    {
+        throw new Exception("Not implemented");
+    }
 }
