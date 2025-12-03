@@ -22,11 +22,24 @@ const int MAX_THREADS = 8;
 
 class ProgramState
 {
+    // ========== Input =======================================================
     string directory = "";
     int worker_count = 4;
+
+    // ========== Scanner =====================================================
+
     FinderAndRemoverThread worker = null;
 
+    // ========== Deleting ====================================================
+
     string[] files_selected = [];
+    ConfirmDeleteData delete_data = null;
+}
+
+class ConfirmDeleteData
+{
+    bool do_delete;
+    bool permanently;
 }
 
 ProgramState P;
@@ -411,27 +424,75 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
         file_size += getSize(safepath(f));
     }
 
+    confirm_delete_dialog(file_count, file_size);
+    assert(P.delete_data !is null);
+
+    if (!P.delete_data.do_delete)
+        return IUP_DEFAULT;
+
+    delete_selected_files(
+        P.files_selected,
+        !P.delete_data.permanently,
+        P.worker_count
+    );
+
+    return IUP_DEFAULT;
+}
+
+private void confirm_delete_dialog(ulong file_count, ulong bytes_to_remove)
+{
     string warning_message = format(
         "This will delete %d files (%s) from your disk.\nProceed?",
         file_count,
-        to_size_byte_unit(file_size)
+        to_size_byte_unit(bytes_to_remove)
     );
 
-    Ihandle* dlg = IupMessageDlg();
-    IupSetAttribute(dlg, "DIALOGTYPE", "WARNING");
+    P.delete_data = new ConfirmDeleteData();
+
+    Ihandle* msg = IupLabel(warning_message.toStringz());
+    Ihandle* checkbox = IupToggle("Delete permanently", null);
+    IupSetCallback(checkbox, "ACTION", &cb_confirm_delete_dialog_permanently_check);
+    Ihandle* btn_yes = IupButton("Delete", null);
+    IupSetAttribute(btn_yes, "PADDING", "11x5");
+    IupSetAttribute(btn_yes, "IMAGE", "IUP_EditErase");
+    IupSetCallback(btn_yes, "ACTION", &cb_confirm_delete_dialog_delete);
+    Ihandle* btn_no = IupButton("Cancel", null);
+    IupSetAttribute(btn_no, "PADDING", "11x5");
+    IupSetAttribute(btn_no, "IMAGE", "IUP_EditUndo");
+    IupSetCallback(btn_no, "ACTION", &cb_confirm_delete_dialog_cancel);
+    Ihandle* buttons = IupHbox(btn_yes, IupFill(), btn_no, null);
+    IupSetAttribute(buttons, "MARGIN", "11x0");
+
+    Ihandle* contain = IupVbox(msg, checkbox, IupFill(), buttons, null);
+    IupSetAttribute(contain, "EXPAND", "YES");
+    IupSetAttribute(contain, "GAP", "8");
+    Ihandle* dlg = IupDialog(contain);
+
     IupSetAttribute(dlg, "TITLE", "Delete files");
-    IupSetAttribute(dlg, "BUTTONS", "OKCANCEL");
-    IupSetStrAttribute(dlg, "VALUE", warning_message.toStringz());
+    IupSetAttribute(dlg, "SIMULATEMODAL", "YES");
+    IupSetAttribute(dlg, "MINSIZE", "300x150");
+    IupSetAttribute(dlg, "MARGIN", "11x8");
+    IupSetAttribute(dlg, "RESIZE", "NO");
+
     IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
-    bool clicked_ok = to!string(IupGetAttribute(dlg, "BUTTONRESPONSE")) == "1";
-
-    if (clicked_ok)
-    {
-        delete_selected_files(P.files_selected, true, P.worker_count);
-    }
-
     IupDestroy(dlg);
+}
 
+extern (C) int cb_confirm_delete_dialog_delete(Ihandle* self)
+{
+    P.delete_data.do_delete = true;
+    return IUP_CLOSE;
+}
+
+extern (C) int cb_confirm_delete_dialog_cancel(Ihandle* self)
+{
+    P.delete_data.do_delete = false;
+    return IUP_CLOSE;
+}
+
+extern (C) int cb_confirm_delete_dialog_permanently_check(Ihandle* self)
+{
+    P.delete_data.permanently = IupGetAttribute(self, "VALUE").to!string == "ON";
     return IUP_DEFAULT;
 }
 
