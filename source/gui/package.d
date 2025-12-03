@@ -28,7 +28,7 @@ class ProgramState
 
     // ========== Scanner =====================================================
 
-    FinderAndRemoverThread worker = null;
+    ScannerThread worker = null;
 
     // ========== Deleting ====================================================
 
@@ -174,6 +174,7 @@ void main_gui()
 
     Ihandle* btn_run = IupButton("Begin", null);
     IupSetStrAttribute(btn_run, "IMAGE", "IUP_ActionOk");
+    IupSetAttribute(btn_run, "ACTIVE", "NO");
     IupSetCallback(btn_run, "ACTION", &cb_btn_run_clicked);
     IupSetHandle("btn_run", btn_run);
 
@@ -246,6 +247,7 @@ void main_gui()
     IupSetHandle("results_frame", results_frame);
     IupSetAttribute(results_frame, "TITLE", "Results");
     IupSetAttribute(results_frame, "SUNKEN", "YES");
+    IupSetAttribute(results_frame, "ACTIVE", "NO");
 
     // ========================================================================
     // Main
@@ -306,6 +308,7 @@ extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
                 dirinfo.folders
             );
             IupSetStrAttribute(IupGetHandle("dir_info_label"), "TITLE", dir_info.toStringz());
+            IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         }
     }
     IupDestroy(file_dlg);
@@ -401,7 +404,7 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
 
 extern (C) int cb_btn_run_clicked(Ihandle* self)
 {
-    P.worker = new FinderAndRemoverThread(P.directory, P.worker_count);
+    P.worker = new ScannerThread(P.directory, P.worker_count);
     P.worker.start();
     return IUP_DEFAULT;
 }
@@ -556,7 +559,7 @@ class RemoverThread : Thread
     }
 }
 
-class FinderAndRemoverThread : Thread
+class ScannerThread : Thread
 {
     // Input
     string dir;
@@ -586,10 +589,9 @@ class FinderAndRemoverThread : Thread
 
     private void run()
     {
-        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("run_hbox"), "ACTIVE", "NO");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", "");
         IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE", "Collision groups:");
@@ -621,10 +623,9 @@ class FinderAndRemoverThread : Thread
                 conflicing_files++;
         }
 
-        IupSetAttribute(IupGetHandle("dir_pick_btn"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("params_workern_text"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("run_hbox"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
             format("Time: %s", time_to_string(total_time_ms)).toStringz()
@@ -643,9 +644,9 @@ class FinderAndRemoverThread : Thread
 class ProgressThread : Thread
 {
     GroupsHasher worker;
-    FinderAndRemoverThread context;
+    ScannerThread context;
 
-    this(FinderAndRemoverThread context, GroupsHasher worker)
+    this(ScannerThread context, GroupsHasher worker)
     {
         this.context = context;
         this.worker = worker;
