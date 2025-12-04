@@ -31,9 +31,12 @@ class ProgramState
 
     ScannerThread worker = null;
 
+    // ========== Results =====================================================
+
+    ResultsUI results_ui = null;
+
     // ========== Deleting ====================================================
 
-    string[] files_selected = [];
     ConfirmDeleteData delete_data = null;
 }
 
@@ -363,9 +366,16 @@ extern (C) int cb_btn_cancel_clicked(Ihandle* self)
 
 extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
 {
-    ulong file_count = P.files_selected.length;
+    string[] selected_files = [];
+
+    if (P.results_ui !is null)
+    {
+        selected_files = P.results_ui.get_checked_files();
+    }
+
+    ulong file_count = selected_files.length;
     ulong file_size = 0;
-    foreach (string f; P.files_selected)
+    foreach (string f; selected_files)
     {
         file_size += getSize(safepath(f));
     }
@@ -377,7 +387,7 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
         return IUP_DEFAULT;
 
     delete_selected_files(
-        P.files_selected,
+        selected_files,
         !P.delete_data.permanently,
         P.worker_count
     );

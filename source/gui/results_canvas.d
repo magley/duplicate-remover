@@ -21,7 +21,6 @@ import hasher;
 import std.checkedint;
 
 static cdCanvas* canvas;
-static ResultsUI results_ui;
 
 Ihandle* create_results_canvas(string handle)
 {
@@ -44,12 +43,12 @@ Ihandle* create_results_canvas(string handle)
 
 void draw_results(string[][] collisions)
 {
-    if (results_ui is null)
+    if (P.results_ui is null)
     {
-        results_ui = new ResultsUI();
-        results_ui.update(collisions);
+        P.results_ui = new ResultsUI();
+        P.results_ui.update(collisions);
     }
-    results_ui.draw();
+    P.results_ui.draw();
 }
 
 class Checkbox
@@ -75,6 +74,21 @@ struct Vec2
 class ResultsUI
 {
     Checkbox[][] checkboxes;
+
+    string[] get_checked_files()
+    {
+        string[] res;
+        foreach (g; checkboxes)
+        {
+            foreach (c; g)
+            {
+                if (c.checked)
+                    res ~= c.path_full;
+            }
+        }
+
+        return res;
+    }
 
     void update(string[][] collisions)
     {
@@ -223,9 +237,9 @@ extern (C) int mouse_cb(Ihandle* ih, int button, int pressed, int x, int y, char
 {
     if (button == IUP_BUTTON1 && pressed == 1)
     {
-        if (results_ui !is null)
+        if (P.results_ui !is null)
         {
-            results_ui.on_mouse_click(x, y);
+            P.results_ui.on_mouse_click(x, y);
         }
     }
     return IUP_DEFAULT;
