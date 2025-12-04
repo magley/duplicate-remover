@@ -123,6 +123,12 @@ class ResultsUI
             foreach (size_t i, Checkbox c; group)
             {
                 Vec2 pos = get_pos_of_checkbox(j, i);
+
+                if (pos.y < -50)
+                    continue;
+                if (pos.y >= H() + 50)
+                    return;
+
                 draw_checkbox(pos.x, pos.y, c.path, c.checked);
             }
         }
