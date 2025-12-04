@@ -13,12 +13,15 @@ import vendor.iup;
 import vendor.cd;
 
 import gui.exporter;
+import gui;
 
 import util;
 import finder;
 import hasher;
+import std.checkedint;
 
 static cdCanvas* canvas;
+static ResultsUI results_ui;
 
 Ihandle* create_results_canvas(string handle)
 {
@@ -39,46 +42,191 @@ Ihandle* create_results_canvas(string handle)
     return self;
 }
 
+void draw_results(string[][] collisions)
+{
+    if (results_ui is null)
+    {
+        results_ui = new ResultsUI();
+        results_ui.update(collisions);
+    }
+    results_ui.draw();
+}
+
+class Checkbox
+{
+    string path_full;
+    string path;
+    bool checked;
+
+    this(string path_full, string path, bool checked)
+    {
+        this.path_full = path_full;
+        this.path = path;
+        this.checked = checked;
+    }
+}
+
+struct Vec2
+{
+    int x;
+    int y;
+}
+
+class ResultsUI
+{
+    Checkbox[][] checkboxes;
+
+    void update(string[][] collisions)
+    {
+        checkboxes = [];
+        reserve(checkboxes, collisions.length);
+        foreach (g; collisions)
+        {
+            Checkbox[] group;
+            reserve(group, g.length);
+
+            foreach (string s; g)
+            {
+                string path_rel = relativePath(s, P.directory);
+                group ~= new Checkbox(s, path_rel, false);
+            }
+
+            checkboxes ~= group;
+        }
+    }
+
+    Vec2 get_pos_of_checkbox(size_t group, size_t checkbox)
+    {
+        int x = 6;
+        int y = 6;
+        y += 30 * group;
+        y += 24 * checkbox;
+        return Vec2(x, y);
+    }
+
+    void draw()
+    {
+        foreach (size_t j, group; checkboxes)
+        {
+            foreach (size_t i, Checkbox c; group)
+            {
+                Vec2 pos = get_pos_of_checkbox(j, i);
+                draw_checkbox(pos.x, pos.y, c.path, c.checked);
+            }
+        }
+    }
+
+    void force_redraw()
+    {
+        Ihandle* canvas = IupGetHandle("results_canvas");
+        IupUpdate(canvas);
+        IupRefresh(canvas);
+    }
+
+    void on_mouse_click(int x, int y)
+    {
+        foreach (size_t j, group; checkboxes)
+        {
+            foreach (size_t i, Checkbox c; group)
+            {
+                Vec2 pos = get_pos_of_checkbox(j, i);
+
+                if (y >= pos.y && y <= pos.y + 20)
+                {
+                    c.checked ^= true;
+                    force_redraw();
+                    return;
+                }
+            }
+        }
+    }
+}
+
+// ========================================================================================
+// Draw functions
+// ========================================================================================
+
+private void draw_checkbox(int x, int y, string text, bool checked)
+{
+    cdCanvasForeground(canvas, CD_BLACK);
+    draw_rect(x, y, 18, 18, false);
+
+    if (checked)
+    {
+        cdCanvasForeground(canvas, CD_BLACK);
+        draw_rect(x + 4, y + 4, 18 - 8, 18 - 8, true);
+        // draw_arc(x + 9, y + 9, 14, 14, 0, 360);
+    }
+
+    cdCanvasForeground(canvas, CD_BLACK);
+    cdCanvasFont(canvas, "System", CD_PLAIN, 10);
+    draw_text(x + 24, y + 14, text);
+
+}
+
+private void draw_rect(int x, int y, int w, int h, bool fill)
+{
+    if (fill)
+    {
+        cdCanvasBox(canvas, x, x + (w), H - y, H - (y + h));
+    }
+    else
+    {
+        cdCanvasRect(canvas, x, x + (w), H - y, H - (y + h));
+    }
+}
+
+private void draw_arc(int cx, int cy, int w, int h, float angle0, float angle1)
+{
+    cdCanvasBegin(canvas, CD_FILL);
+    cdCanvasArc(canvas, cx, H - cy, w, h, angle0, angle1);
+    cdCanvasEnd(canvas);
+}
+
+private void draw_text(int x, int y, string text)
+{
+    cdCanvasText(canvas, x, H - y, text.toStringz());
+}
+
+private int H()
+{
+    int h;
+    cdCanvasGetSize(canvas, null, &h, null, null);
+    return h;
+}
+
+// ========================================================================================
+// Callbacks
+// ========================================================================================
+
 extern (C) int map_cb(Ihandle* self)
 {
     canvas = cdCreateCanvas(CD_IUP, self);
-    TRANSFORM(canvas);
     return IUP_DEFAULT;
 }
 
 extern (C) int redraw_cb(Ihandle* self, float x, float y)
 {
     cdCanvasActivate(canvas);
-    TRANSFORM(canvas);
-
     cdCanvasClear(canvas);
 
-    cdCanvasForeground(canvas, CD_BLUE);
-    cdCanvasBox(canvas, 10, 100, 10, 100);
-
-    cdCanvasForeground(canvas, CD_RED);
-    cdCanvasRect(canvas, 10, 100, 10, 100);
+    if (P.worker !is null)
+    {
+        string[][] collisions = P.worker.collisions;
+        draw_results(collisions);
+    }
 
     return IUP_DEFAULT;
 }
 
 extern (C) int mouse_cb(Ihandle* ih, int button, int pressed, int x, int y, char* status)
 {
-    writeln("AAA");
+    if (button == IUP_BUTTON1 && pressed == 1)
+    {
+        if (results_ui !is null)
+        {
+            results_ui.on_mouse_click(x, y);
+        }
+    }
     return IUP_DEFAULT;
-}
-
-private void TRANSFORM(cdCanvas* canvas)
-{
-    int width, height;
-    cdCanvasGetSize(canvas, &width, &height, null, null);
-
-    double[6] m = [
-        1, 0, // a, b (X axis unchanged)
-        0, -1, // c, d (Y inverted)
-        0,
-        cast(double) height // e, f (translation)
-    ];
-
-    cdCanvasTransform(canvas, m.ptr);
 }
