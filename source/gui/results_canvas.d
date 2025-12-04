@@ -34,6 +34,7 @@ Ihandle* create_results_canvas(string handle)
     IupSetAttribute(self, "CANFOCUS", "YES");
 
     IupSetCallback(self, "BUTTON_CB", cast(Icallback)&mouse_cb);
+    IupSetCallback(self, "WHEEL_CB", cast(Icallback)&wheel_cb);
     IupSetCallback(self, "MAP_CB", cast(Icallback)&map_cb);
     IupSetCallback(self, "ACTION", cast(Icallback)&redraw_cb);
 
@@ -64,6 +65,7 @@ struct Vec2
 class ResultsUI
 {
     Checkbox[][] checkboxes;
+    int scroll_y = 0;
 
     string[] get_checked_files()
     {
@@ -102,7 +104,7 @@ class ResultsUI
     Vec2 get_pos_of_checkbox(size_t group, size_t checkbox)
     {
         int x = 6;
-        int y = 6;
+        int y = 6 + scroll_y;
 
         for (int i = 0; i < group; i++)
         {
@@ -148,6 +150,30 @@ class ResultsUI
                     return;
                 }
             }
+        }
+    }
+
+    void on_scroll(int delta_y)
+    {
+        const int SCROLL_SPEED = 20 + H() / 10;
+
+        int scroll_y_max = get_pos_of_checkbox(
+            checkboxes.length - 1U, // Last group
+            checkboxes[$ - 1].length - 1U + 1U).y; // Last checkbox + 1 
+        scroll_y_max -= scroll_y; // Undo scroll
+        scroll_y_max -= H(); // Clamp to bottom of the canvas
+
+        const int scroll_y_before = scroll_y;
+
+        scroll_y += SCROLL_SPEED * delta_y;
+        if (scroll_y < -scroll_y_max)
+            scroll_y = -scroll_y_max;
+        if (scroll_y > 0)
+            scroll_y = 0;
+
+        if (scroll_y_before != scroll_y)
+        {
+            force_redraw();
         }
     }
 }
@@ -237,5 +263,15 @@ extern (C) int mouse_cb(Ihandle* ih, int button, int pressed, int x, int y, char
             P.results_ui.on_mouse_click(x, y);
         }
     }
+    return IUP_DEFAULT;
+}
+
+extern (C) int wheel_cb(Ihandle* ih, float delta, int, int, char*)
+{
+    if (P.results_ui !is null)
+    {
+        P.results_ui.on_scroll(cast(int) delta);
+    }
+
     return IUP_DEFAULT;
 }

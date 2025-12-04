@@ -596,7 +596,7 @@ class ScannerThread : Thread
     }
 }
 
-extern (C) int cb_results_canvas_msg(Ihandle* ih, const char* s, int i, double d, void* p)
+extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
 {
     if (P.results_ui is null)
     {
@@ -604,6 +604,13 @@ extern (C) int cb_results_canvas_msg(Ihandle* ih, const char* s, int i, double d
     }
 
     P.results_ui.update(P.worker.collisions);
+
+    foreach (g; P.results_ui.checkboxes)
+    {
+        for (size_t i = 1; i < g.length; i++)
+            g[i].checked = true;
+    }
+
     P.results_ui.force_redraw();
 
     return IUP_DEFAULT;
