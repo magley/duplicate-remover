@@ -113,8 +113,14 @@ class ResultsUI
     {
         int x = 6;
         int y = 6;
-        y += 30 * group;
+
+        for (int i = 0; i < group; i++)
+        {
+            y += 24 * checkboxes[i].length;
+        }
         y += 24 * checkbox;
+        y += 8 * group;
+
         return Vec2(x, y);
     }
 
