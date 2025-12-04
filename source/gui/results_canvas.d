@@ -41,16 +41,6 @@ Ihandle* create_results_canvas(string handle)
     return self;
 }
 
-void draw_results(string[][] collisions)
-{
-    if (P.results_ui is null)
-    {
-        P.results_ui = new ResultsUI();
-        P.results_ui.update(collisions);
-    }
-    P.results_ui.draw();
-}
-
 class Checkbox
 {
     string path_full;
@@ -230,10 +220,9 @@ extern (C) int redraw_cb(Ihandle* self, float x, float y)
     cdCanvasActivate(canvas);
     cdCanvasClear(canvas);
 
-    if (P.worker !is null)
+    if (P.results_ui !is null)
     {
-        string[][] collisions = P.worker.collisions;
-        draw_results(collisions);
+        P.results_ui.draw();
     }
 
     return IUP_DEFAULT;

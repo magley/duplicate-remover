@@ -186,6 +186,7 @@ void main_gui()
     IupSetHandle("result_btn_box", result_btn_box);
 
     Ihandle* results_canvas = create_results_canvas("results_canvas");
+    IupSetCallback(results_canvas, "POSTMESSAGE_CB", cast(Icallback)&cb_results_canvas_msg);
     Ihandle* results_list_scroll = IupScrollBox(results_canvas);
 
     Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, result_btn_box, results_list_scroll, null);
@@ -590,8 +591,22 @@ class ScannerThread : Thread
             format("Conflicting files: %d", conflicing_files).toStringz()
         );
 
-        IupPostMessage(IupGetHandle("results_list"), null, 0, 0.0, null);
+        // Calls: cb_results_canvas_msg()
+        IupPostMessage(IupGetHandle("results_canvas"), null, 0, 0.0, null);
     }
+}
+
+extern (C) int cb_results_canvas_msg(Ihandle* ih, const char* s, int i, double d, void* p)
+{
+    if (P.results_ui is null)
+    {
+        P.results_ui = new ResultsUI();
+    }
+
+    P.results_ui.update(P.worker.collisions);
+    P.results_ui.force_redraw();
+
+    return IUP_DEFAULT;
 }
 
 class ProgressThread : Thread
