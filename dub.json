@@ -13,6 +13,7 @@
 	"libs": [
 		"lib/cd",
 		"lib/cdim",
+		"lib/cdcontextplus",
 		"lib/freetype",
 		"lib/iup",
 		"lib/iupcd",
