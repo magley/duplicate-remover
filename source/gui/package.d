@@ -12,6 +12,7 @@ import core.thread.osthread;
 import vendor.iup;
 
 import gui.exporter;
+import gui.results_canvas;
 
 import util;
 import finder;
@@ -58,59 +59,7 @@ extern (C) int cb_on_export_btn_clicked(Ihandle* self)
 
 void add_items(string[][] collisions)
 {
-    Ihandle* list = IupGetHandle("results_list");
-
-    // 1 Delete old items.
-
-    int child_count = IupGetChildCount(list);
-    for (int i = child_count - 1; i >= 0; i--)
-    {
-        Ihandle* c = IupGetChild(list, i);
-        IupDetach(c);
-        IupDestroy(c);
-    }
-
-    // 2 Append new items.
-
-    P.files_selected = [];
-    foreach (size_t i, string[] group; collisions)
-    {
-        Ihandle*[] children;
-
-        foreach (size_t j, string file; group)
-        {
-            const ulong size = getSize(safepath(file));
-            const string size_str = to_size_byte_unit(size);
-            const string path_rel = relativePath(file, P.directory);
-            const string label = format("(%s) %s", size_str, path_rel);
-
-            Ihandle* checkbox = IupToggle(label.toStringz(), null);
-            IupSetAttribute(checkbox, "EXPAND", "HORIZONTAL");
-            if (j == 0)
-            {
-                P.files_selected ~= file;
-                IupSetAttribute(checkbox, "VALUE", "ON");
-            }
-
-            Ihandle* item = IupHbox(checkbox, null);
-            IupSetAttribute(item, "EXPAND", "HORIZONTAL");
-
-            children ~= item;
-        }
-
-        children ~= null;
-        Ihandle* vbox = IupVboxv(children.ptr);
-        IupSetAttribute(vbox, "EXPAND", "HORIZONTAL");
-
-        Ihandle* frame = IupFrame(vbox);
-        IupSetStrAttribute(frame, "TITLE", format("Group #%d", i + 1).toStringz());
-        IupSetAttribute(frame, "EXPAND", "HORIZONTAL");
-
-        IupAppend(list, frame);
-        IupMap(frame);
-    }
-
-    IupRefresh(list);
+    return;
 }
 
 void main_gui()
@@ -233,12 +182,8 @@ void main_gui()
     IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
     IupSetHandle("result_btn_box", result_btn_box);
 
-    Ihandle* results_list = IupVbox(null);
-    IupSetAttribute(results_list, "EXPAND", "HORIZONTAL");
-    IupSetHandle("results_list", results_list);
-    IupSetCallback(results_list, "POSTMESSAGE_CB", cast(Icallback)&on_results_list_add_items);
-
-    Ihandle* results_list_scroll = IupScrollBox(results_list);
+    Ihandle* results_canvas = create_results_canvas("results_canvas");
+    Ihandle* results_list_scroll = IupScrollBox(results_canvas);
 
     Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, result_btn_box, results_list_scroll, null);
     IupSetHandle("results_container", results_container);
@@ -247,7 +192,7 @@ void main_gui()
     IupSetHandle("results_frame", results_frame);
     IupSetAttribute(results_frame, "TITLE", "Results");
     IupSetAttribute(results_frame, "SUNKEN", "YES");
-    IupSetAttribute(results_frame, "ACTIVE", "NO");
+    // IupSetAttribute(results_frame, "ACTIVE", "NO");
 
     // ========================================================================
     // Main
@@ -267,8 +212,6 @@ void main_gui()
     IupSetAttribute(main_dlg, "RASTERSIZE", "400x400");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
-
-    IupRefresh(results_list);
 
     IupMainLoop();
     IupClose();
