@@ -196,7 +196,7 @@ void main_gui()
     IupSetHandle("results_frame", results_frame);
     IupSetAttribute(results_frame, "TITLE", "Results");
     IupSetAttribute(results_frame, "SUNKEN", "YES");
-    // IupSetAttribute(results_frame, "ACTIVE", "NO");
+    IupSetAttribute(results_frame, "ACTIVE", "NO");
 
     // ========================================================================
     // Main

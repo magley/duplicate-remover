@@ -120,17 +120,21 @@ class ResultsUI
     {
         foreach (size_t j, group; checkboxes)
         {
+            Vec2 pos;
             foreach (size_t i, Checkbox c; group)
             {
-                Vec2 pos = get_pos_of_checkbox(j, i);
+                pos = get_pos_of_checkbox(j, i);
 
                 if (pos.y < -50)
                     continue;
                 if (pos.y >= H() + 50)
                     return;
 
-                draw_checkbox(pos.x, pos.y, c.path, c.checked);
+                draw_checkbox(pos.x + 4, pos.y, c.path, c.checked);
             }
+
+            draw_line(pos.x, pos.y + 24, W() - pos.x, pos.y + 24, 2);
+
         }
     }
 
@@ -191,6 +195,7 @@ class ResultsUI
 private void draw_checkbox(int x, int y, string text, bool checked)
 {
     cdCanvasForeground(canvas, CD_BLACK);
+    cdCanvasLineWidth(canvas, 1);
     draw_rect(x, y, 18, 18, false);
 
     if (checked)
@@ -201,9 +206,8 @@ private void draw_checkbox(int x, int y, string text, bool checked)
     }
 
     cdCanvasForeground(canvas, CD_BLACK);
-    cdCanvasFont(canvas, "System", CD_PLAIN, 10);
+    cdCanvasFont(canvas, "Arial", CD_PLAIN, 10);
     draw_text(x + 24, y + 14, text);
-
 }
 
 private void draw_rect(int x, int y, int w, int h, bool fill)
@@ -230,11 +234,24 @@ private void draw_text(int x, int y, string text)
     cdCanvasText(canvas, x, H - y, text.toStringz());
 }
 
+private void draw_line(int x, int y, int x2, int y2, int width = 1)
+{
+    cdCanvasLineWidth(canvas, width);
+    cdCanvasLine(canvas, x, H - y, x2, H - y2);
+}
+
 private int H()
 {
     int h;
     cdCanvasGetSize(canvas, null, &h, null, null);
     return h;
+}
+
+private int W()
+{
+    int w;
+    cdCanvasGetSize(canvas, &w, null, null, null);
+    return w;
 }
 
 // ========================================================================================
