@@ -1,7 +1,6 @@
 .dub
 docs.json
 __dummy.html
-docs/
 /duplicate_remover
 duplicate_remover.so
 duplicate_remover.dylib
