@@ -215,14 +215,13 @@ void main_gui()
 
     Ihandle* results_canvas = create_results_canvas("results_canvas");
     IupSetCallback(results_canvas, "POSTMESSAGE_CB", cast(Icallback)&cb_results_canvas_msg);
-    Ihandle* results_list_scroll = IupScrollBox(results_canvas);
 
     Ihandle* results_container = IupVbox(
         res_groups_lbl,
         res_filecnt_lbl,
         result_btn_box,
         results_toolbar,
-        results_list_scroll,
+        results_canvas,
         null
     );
     IupSetHandle("results_container", results_container);
