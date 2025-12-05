@@ -56,6 +56,42 @@ class Checkbox
     }
 }
 
+class CheckboxGroup
+{
+    Checkbox[] arr;
+    ulong size_bytes;
+    string size_str;
+
+    // Order of the group inside an array.
+    size_t index = 0;
+
+    this(string[] filenames, string directory)
+    {
+        foreach (string p; filenames)
+        {
+            string path_rel = relativePath(p, directory);
+            arr ~= new Checkbox(p, path_rel, false);
+        }
+
+        compute_params();
+    }
+
+    private void compute_params()
+    {
+        size_bytes = 0;
+        foreach (c; arr)
+        {
+            size_bytes += getSize(safepath(c.path_full));
+        }
+        size_str = to_size_byte_unit(size_bytes);
+    }
+
+    size_t length() const
+    {
+        return arr.length;
+    }
+}
+
 struct Vec2
 {
     int x;
@@ -64,15 +100,25 @@ struct Vec2
 
 class ResultsUI
 {
-    Checkbox[][] checkboxes;
+    CheckboxGroup[] checkboxes;
     int scroll_y = 0;
+
+    enum SortType
+    {
+        Id,
+        Size,
+        FileCount
+    }
+
+    SortType sort_type = SortType.Id;
+    bool sort_ascending = true;
 
     string[] get_checked_files()
     {
         string[] res;
         foreach (g; checkboxes)
         {
-            foreach (c; g)
+            foreach (c; g.arr)
             {
                 if (c.checked)
                     res ~= c.path_full;
@@ -86,19 +132,14 @@ class ResultsUI
     {
         checkboxes = [];
         reserve(checkboxes, collisions.length);
-        foreach (g; collisions)
+        foreach (size_t index, group; collisions)
         {
-            Checkbox[] group;
-            reserve(group, g.length);
-
-            foreach (string s; g)
-            {
-                string path_rel = relativePath(s, P.directory);
-                group ~= new Checkbox(s, path_rel, false);
-            }
-
-            checkboxes ~= group;
+            auto g = new CheckboxGroup(group, P.directory);
+            g.index = index;
+            checkboxes ~= g;
         }
+
+        sort_by(SortType.FileCount, false);
     }
 
     Vec2 get_pos_of_checkbox(size_t group, size_t checkbox)
@@ -121,7 +162,7 @@ class ResultsUI
         foreach (size_t j, group; checkboxes)
         {
             Vec2 pos;
-            foreach (size_t i, Checkbox c; group)
+            foreach (size_t i, Checkbox c; group.arr)
             {
                 pos = get_pos_of_checkbox(j, i);
 
@@ -148,7 +189,7 @@ class ResultsUI
     {
         foreach (size_t j, group; checkboxes)
         {
-            foreach (size_t i, Checkbox c; group)
+            foreach (size_t i, Checkbox c; group.arr)
             {
                 Vec2 pos = get_pos_of_checkbox(j, i);
 
@@ -184,6 +225,32 @@ class ResultsUI
         {
             force_redraw();
         }
+    }
+
+    void sort_by(SortType type, bool ascending)
+    {
+        sort_type = type;
+        sort_ascending = ascending;
+
+        final switch (sort_type) with (SortType)
+        {
+        case Id:
+            sort!("a.index < b.index")(checkboxes);
+            break;
+        case Size:
+            sort!("a.size_bytes < b.size_bytes")(checkboxes);
+            break;
+        case FileCount:
+            sort!("a.length < b.length")(checkboxes);
+            break;
+        }
+
+        if (!ascending)
+        {
+            reverse(checkboxes);
+        }
+
+        force_redraw();
     }
 }
 

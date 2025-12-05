@@ -608,7 +608,7 @@ extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
     foreach (g; P.results_ui.checkboxes)
     {
         for (size_t i = 1; i < g.length; i++)
-            g[i].checked = true;
+            g.arr[i].checked = true;
     }
 
     P.results_ui.force_redraw();
