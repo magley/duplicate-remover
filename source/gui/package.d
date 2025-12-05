@@ -185,11 +185,46 @@ void main_gui()
     IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
     IupSetHandle("result_btn_box", result_btn_box);
 
+    Ihandle* results_toolbar_sort_id = IupButton(null, null);
+    IupSetAttribute(results_toolbar_sort_id, "IMAGE", "IUP_ToolsSortAscend");
+    IupSetStrAttribute(results_toolbar_sort_id, "TIP", "Sort by ID");
+    IupSetCallback(results_toolbar_sort_id, "ACTION", &cb_btn_sort_results_id);
+    IupSetHandle("results_toolbar_sort_id", results_toolbar_sort_id);
+
+    Ihandle* results_toolbar_sort_size = IupButton(null, null);
+    IupSetAttribute(results_toolbar_sort_size, "IMAGE", "IUP_FileProperties");
+    IupSetStrAttribute(results_toolbar_sort_size, "TIP", "Sort by size of all files");
+    IupSetCallback(results_toolbar_sort_size, "ACTION", &cb_btn_sort_results_size);
+    IupSetHandle("results_toolbar_sort_size", results_toolbar_sort_size);
+
+    Ihandle* results_toolbar_sort_file_count = IupButton(null, null);
+    IupSetAttribute(results_toolbar_sort_file_count, "IMAGE", "IUP_EditCopy");
+    IupSetStrAttribute(results_toolbar_sort_file_count, "TIP", "Sort by number of files");
+    IupSetCallback(results_toolbar_sort_file_count, "ACTION", &cb_btn_sort_results_file_count);
+    IupSetHandle("results_toolbar_sort_file_count", results_toolbar_sort_file_count);
+
+    Ihandle* results_toolbar = IupHbox(
+        results_toolbar_sort_id,
+        results_toolbar_sort_size,
+        results_toolbar_sort_file_count,
+        null
+    );
+    IupSetAttribute(results_toolbar, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(results_toolbar, "GAP", "4");
+    IupSetHandle("results_toolbar", results_toolbar);
+
     Ihandle* results_canvas = create_results_canvas("results_canvas");
     IupSetCallback(results_canvas, "POSTMESSAGE_CB", cast(Icallback)&cb_results_canvas_msg);
     Ihandle* results_list_scroll = IupScrollBox(results_canvas);
 
-    Ihandle* results_container = IupVbox(res_groups_lbl, res_filecnt_lbl, result_btn_box, results_list_scroll, null);
+    Ihandle* results_container = IupVbox(
+        res_groups_lbl,
+        res_filecnt_lbl,
+        result_btn_box,
+        results_toolbar,
+        results_list_scroll,
+        null
+    );
     IupSetHandle("results_container", results_container);
 
     Ihandle* results_frame = IupFrame(results_container);
@@ -207,13 +242,13 @@ void main_gui()
 
     Ihandle* main_dlg = IupDialog(main_vbox);
     IupSetAttribute(main_dlg, "TITLE", "Duplicate Remover");
-    IupSetAttribute(main_dlg, "MINSIZE", "400x400");
+    IupSetAttribute(main_dlg, "MINSIZE", "400x500");
     IupSetAttribute(main_dlg, "MARGIN", "3x3");
     IupSetHandle("main", main_dlg);
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
 
-    IupSetAttribute(main_dlg, "RASTERSIZE", "400x400");
+    IupSetAttribute(main_dlg, "RASTERSIZE", "400x500");
     IupRefresh(main_dlg);
     IupSetAttribute(main_dlg, "RASTERSIZE", null);
 
@@ -683,4 +718,32 @@ string time_to_string(ulong milisecs)
         return format("%02d:%02d", m, s);
     }
     return format("%02d:%02d:%02d", h, m, s);
+}
+
+extern (C) int cb_btn_sort_results_id(Ihandle* self)
+{
+    sort_results(ResultsUI.SortType.Id);
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_btn_sort_results_size(Ihandle* self)
+{
+    sort_results(ResultsUI.SortType.Size);
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_btn_sort_results_file_count(Ihandle* self)
+{
+    sort_results(ResultsUI.SortType.FileCount);
+    return IUP_DEFAULT;
+}
+
+private void sort_results(ResultsUI.SortType t)
+{
+    if (P is null || P.results_ui is null)
+    {
+        return;
+    }
+
+    P.results_ui.sort_by(t, !P.results_ui.sort_ascending);
 }

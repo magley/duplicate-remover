@@ -138,8 +138,6 @@ class ResultsUI
             g.index = index;
             checkboxes ~= g;
         }
-
-        sort_by(SortType.FileCount, false);
     }
 
     Vec2 get_pos_of_checkbox(size_t group, size_t checkbox)
