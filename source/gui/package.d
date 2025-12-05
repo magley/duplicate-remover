@@ -136,24 +136,27 @@ void main_gui()
     IupSetCallback(btn_cancel, "ACTION", &cb_btn_cancel_clicked);
     IupSetHandle("btn_cancel", btn_cancel);
 
-    Ihandle* run_hbox = IupHbox(
-        btn_run, //btn_cancel,
-        null
-    );
-    IupSetHandle("run_hbox", run_hbox);
-
     Ihandle* run_progress = IupGauge();
-    IupSetAttribute(run_progress, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(run_progress, "EXPAND", "YES");
     IupSetAttribute(run_progress, "DASHED", "NO");
     IupSetAttribute(run_progress, "MAX", "100");
     IupSetAttribute(run_progress, "VALUE", "0");
     IupSetHandle("run_progress", run_progress);
 
+    Ihandle* run_hbox = IupHbox(
+        btn_run, //btn_cancel,
+        run_progress,
+        null
+    );
+    IupSetAttribute(run_hbox, "GAP", "4");
+    IupSetAttribute(run_hbox, "EXPAND", "HORIZONTAL");
+    IupSetHandle("run_hbox", run_hbox);
+
     Ihandle* run_time = IupLabel("");
     IupSetAttribute(run_time, "EXPAND", "HORIZONTAL");
     IupSetHandle("run_time", run_time);
 
-    Ihandle* run_container = IupVbox(run_hbox, run_progress, run_time, null);
+    Ihandle* run_container = IupVbox(run_hbox, run_time, null);
     IupSetHandle("run_container", run_container);
 
     Ihandle* runner_frame = IupFrame(run_container);
@@ -579,7 +582,7 @@ class ScannerThread : Thread
     {
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("run_hbox"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", "");
         IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE", "Collision groups:");
@@ -613,7 +616,7 @@ class ScannerThread : Thread
 
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("run_hbox"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
             format("Time: %s", time_to_string(total_time_ms)).toStringz()
