@@ -134,7 +134,6 @@ class ResultsUI
             }
 
             draw_line(pos.x, pos.y + 24, W() - pos.x, pos.y + 24, 2);
-
         }
     }
 
@@ -267,6 +266,16 @@ extern (C) int map_cb(Ihandle* self)
 extern (C) int redraw_cb(Ihandle* self, float x, float y)
 {
     cdCanvasActivate(canvas);
+
+    if (IupGetInt(IupGetHandle("results_canvas"), "ACTIVE") == 0)
+    {
+        cdCanvasBackground(canvas, 0xDCDCDC);
+    }
+    else
+    {
+        cdCanvasBackground(canvas, CD_WHITE);
+    }
+
     cdCanvasClear(canvas);
 
     if (P.results_ui !is null)
