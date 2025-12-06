@@ -188,28 +188,11 @@ void main_gui()
     IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
     IupSetHandle("result_btn_box", result_btn_box);
 
-    Ihandle* results_toolbar_sort_id = IupButton(null, null);
-    IupSetAttribute(results_toolbar_sort_id, "IMAGE", "IUP_ToolsSortAscend");
-    IupSetStrAttribute(results_toolbar_sort_id, "TIP", "Sort by ID");
-    IupSetCallback(results_toolbar_sort_id, "ACTION", &cb_btn_sort_results_id);
-    IupSetHandle("results_toolbar_sort_id", results_toolbar_sort_id);
-
-    Ihandle* results_toolbar_sort_size = IupButton(null, null);
-    IupSetAttribute(results_toolbar_sort_size, "IMAGE", "IUP_FileProperties");
-    IupSetStrAttribute(results_toolbar_sort_size, "TIP", "Sort by size of all files");
-    IupSetCallback(results_toolbar_sort_size, "ACTION", &cb_btn_sort_results_size);
-    IupSetHandle("results_toolbar_sort_size", results_toolbar_sort_size);
-
-    Ihandle* results_toolbar_sort_file_count = IupButton(null, null);
-    IupSetAttribute(results_toolbar_sort_file_count, "IMAGE", "IUP_EditCopy");
-    IupSetStrAttribute(results_toolbar_sort_file_count, "TIP", "Sort by number of files");
-    IupSetCallback(results_toolbar_sort_file_count, "ACTION", &cb_btn_sort_results_file_count);
-    IupSetHandle("results_toolbar_sort_file_count", results_toolbar_sort_file_count);
-
     Ihandle* results_toolbar = IupHbox(
-        results_toolbar_sort_id,
-        results_toolbar_sort_size,
-        results_toolbar_sort_file_count,
+        iup_button(null, "IUP_ToolsSortAscend", "Sort by ID", "res_sort_id", &cb_btn_sort_results_id),
+        iup_button(null, "IUP_FileProperties", "Sort by size", "res_sort_size", &cb_btn_sort_results_size),
+        iup_button(null, "IUP_EditCopy", "Sort by file count", "res_sort_file_count", &cb_btn_sort_results_file_count),
+        IupSetAttributes(IupLabel(null), "SEPARATOR=VERTICAL"),
         null
     );
     IupSetAttribute(results_toolbar, "EXPAND", "HORIZONTAL");
@@ -739,4 +722,14 @@ private void sort_results(ResultsUI.SortType t)
     }
 
     P.results_ui.sort_by(t, !P.results_ui.sort_ascending);
+}
+
+private Ihandle* iup_button(string text, string image, string tip, string handle, Icallback callback)
+{
+    Ihandle* h = IupButton(text is null ? null : text.toStringz(), null);
+    IupSetStrAttribute(h, "IMAGE", image is null ? null : image.toStringz());
+    IupSetStrAttribute(h, "TIP", tip is null ? null : tip.toStringz());
+    IupSetCallback(h, "ACTION", callback);
+    IupSetHandle(handle.toStringz(), h);
+    return h;
 }
