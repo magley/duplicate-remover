@@ -188,11 +188,31 @@ void main_gui()
     IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
     IupSetHandle("result_btn_box", result_btn_box);
 
+    Ihandle* quick_select_list = IupList(null);
+    // --- Order must match the order defined in ResultsUI.QuickSelect ---
+    IupSetStrAttribute(quick_select_list, "1", "All but largest");
+    IupSetStrAttribute(quick_select_list, "2", "All but smallest");
+    IupSetStrAttribute(quick_select_list, "3", "Only largest");
+    IupSetStrAttribute(quick_select_list, "4", "Only smallest");
+    IupSetStrAttribute(quick_select_list, "5", "All");
+    IupSetStrAttribute(quick_select_list, "6", "None");
+    IupSetStrAttribute(quick_select_list, "7", null);
+    IupSetAttribute(quick_select_list, "DROPDOWN", "YES");
+    IupSetAttribute(quick_select_list, "VALUE", "1");
+    IupSetHandle("quick_select_list", quick_select_list);
+
+    Ihandle* quick_select_lbl = IupLabel("Select:");
+
+    Ihandle* quick_select_btn = iup_button("Go", "IUP_MediaPlay", null, "quick_select_btn", &cb_btn_quick_select);
+
     Ihandle* results_toolbar = IupHbox(
         iup_button(null, "IUP_ToolsSortAscend", "Sort by ID", "res_sort_id", &cb_btn_sort_results_id),
         iup_button(null, "IUP_FileProperties", "Sort by size", "res_sort_size", &cb_btn_sort_results_size),
         iup_button(null, "IUP_EditCopy", "Sort by file count", "res_sort_file_count", &cb_btn_sort_results_file_count),
         IupSetAttributes(IupLabel(null), "SEPARATOR=VERTICAL"),
+        quick_select_lbl,
+        quick_select_list,
+        quick_select_btn,
         null
     );
     IupSetAttribute(results_toolbar, "EXPAND", "HORIZONTAL");
@@ -623,7 +643,7 @@ extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
         P.results_ui = new ResultsUI();
 
     P.results_ui.update(P.worker.collisions);
-    P.results_ui.quick_select(ResultsUI.QuickSelect.All);
+    P.results_ui.quick_select(ResultsUI.QuickSelect.AllButLargest);
     return IUP_DEFAULT;
 }
 
@@ -722,6 +742,22 @@ private void sort_results(ResultsUI.SortType t)
     }
 
     P.results_ui.sort_by(t, !P.results_ui.sort_ascending);
+}
+
+extern (C) int cb_btn_quick_select(Ihandle* self)
+{
+    if (P is null || P.results_ui is null)
+    {
+        return IUP_DEFAULT;
+    }
+
+    Ihandle* quick_select_list = IupGetHandle("quick_select_list");
+    int i = IupGetInt(quick_select_list, "VALUE") - 1;
+    ResultsUI.QuickSelect select_mode = cast(ResultsUI.QuickSelect) i;
+
+    P.results_ui.quick_select(select_mode);
+
+    return IUP_DEFAULT;
 }
 
 private Ihandle* iup_button(string text, string image, string tip, string handle, Icallback callback)
