@@ -6,6 +6,7 @@ import std.string;
 import std.datetime.stopwatch;
 import std.file;
 import std.path;
+import std.array;
 import std.algorithm;
 import core.thread.osthread;
 
@@ -49,12 +50,14 @@ class Checkbox
     string path_full;
     string path;
     bool checked;
+    size_t size_bytes;
 
     this(string path_full, string path, bool checked)
     {
         this.path_full = path_full;
         this.path = path;
         this.checked = checked;
+        this.size_bytes = getSize(safepath(path_full));
     }
 }
 
@@ -82,9 +85,7 @@ class CheckboxGroup
     {
         size_bytes = 0;
         foreach (c; arr)
-        {
-            size_bytes += getSize(safepath(c.path_full));
-        }
+            size_bytes += c.size_bytes;
         size_str = to_size_byte_unit(size_bytes);
     }
 
@@ -110,6 +111,16 @@ class ResultsUI
         Id,
         Size,
         FileCount
+    }
+
+    enum QuickSelect
+    {
+        AllButLargest,
+        AllButSmallest,
+        OnlyLargest,
+        OnlySmallest,
+        All,
+        None,
     }
 
     SortType sort_type = SortType.Id;
@@ -251,6 +262,51 @@ class ResultsUI
         }
 
         force_redraw();
+    }
+
+    void quick_select(QuickSelect mode)
+    {
+        foreach (g; checkboxes)
+        {
+            quick_select_group(g, mode, false);
+        }
+
+        force_redraw();
+    }
+
+    private void quick_select_group(CheckboxGroup group, QuickSelect mode, bool redraw = true)
+    {
+        foreach (c; group.arr)
+            c.checked = false;
+
+        final switch (mode) with (QuickSelect)
+        {
+        case AllButLargest:
+            foreach (c; group.arr.dup.sort!"a.size_bytes < b.size_bytes"[1 .. $])
+                c.checked = true;
+            break;
+        case AllButSmallest:
+            foreach (c; group.arr.dup.sort!"a.size_bytes > b.size_bytes"[1 .. $])
+                c.checked = true;
+            break;
+        case OnlyLargest:
+            group.arr.maxElement!"a.size_bytes".checked = true;
+            break;
+        case OnlySmallest:
+            group.arr.minElement!"a.size_bytes".checked = true;
+            break;
+        case All:
+            foreach (c; group.arr)
+                c.checked = true;
+            break;
+        case None:
+            break;
+        }
+
+        if (redraw)
+        {
+            force_redraw();
+        }
     }
 }
 
