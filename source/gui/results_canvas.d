@@ -20,10 +20,12 @@ import finder;
 import hasher;
 import std.checkedint;
 
-static cdCanvas* canvas;
+private static cdCanvas* canvas;
+private string canvas_iuphandle;
 
 Ihandle* create_results_canvas(string handle)
 {
+    canvas_iuphandle = handle;
     cdInitContextPlus();
     cdUseContextPlus(1);
 
@@ -38,7 +40,7 @@ Ihandle* create_results_canvas(string handle)
     IupSetCallback(self, "MAP_CB", cast(Icallback)&map_cb);
     IupSetCallback(self, "ACTION", cast(Icallback)&redraw_cb);
 
-    IupSetHandle(handle.toStringz(), self);
+    IupSetHandle(canvas_iuphandle.toStringz(), self);
     return self;
 }
 
@@ -178,7 +180,7 @@ class ResultsUI
 
     void force_redraw()
     {
-        Ihandle* canvas = IupGetHandle("results_canvas");
+        Ihandle* canvas = IupGetHandle(canvas_iuphandle.toStringz());
         IupUpdate(canvas);
         IupRefresh(canvas);
     }
@@ -332,7 +334,7 @@ extern (C) int redraw_cb(Ihandle* self, float x, float y)
 {
     cdCanvasActivate(canvas);
 
-    if (IupGetInt(IupGetHandle("results_canvas"), "ACTIVE") == 0)
+    if (IupGetInt(IupGetHandle(canvas_iuphandle.toStringz()), "ACTIVE") == 0)
     {
         cdCanvasBackground(canvas, 0xDCDCDC);
     }
