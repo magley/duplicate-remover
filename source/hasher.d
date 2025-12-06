@@ -133,10 +133,7 @@ private string[][] hash_groups_partial_recursive(string[][] groups, int[] partia
 
         foreach (size_t i, string[] group; G)
         {
-            string[] group_collisions = hash_group_partial(group, k, progress_cb);
-            if (group_collisions.length < 2)
-                continue;
-
+            string[][] group_collisions = hash_group_partial(group, k, progress_cb);
             collisions ~= group_collisions;
         }
 
@@ -156,24 +153,21 @@ private string[][] hash_groups(string[][] groups, ProgressFunc progress_cb)
 
     foreach (size_t i, string[] group; groups)
     {
-        string[] group_collisions = hash_group(group, progress_cb);
-        if (group_collisions.length < 2)
-            continue;
-
+        string[][] group_collisions = hash_group(group, progress_cb);
         collisions ~= group_collisions;
     }
 
     return collisions;
 }
 
-private string[] hash_group(string[] group, ProgressFunc progress_cb)
+private string[][] hash_group(string[] group, ProgressFunc progress_cb)
 {
     return hash_group_partial(group, -1, progress_cb);
 }
 
-private string[] hash_group_partial(string[] group, int k, ProgressFunc progress_cb)
+private string[][] hash_group_partial(string[] group, int k, ProgressFunc progress_cb)
 {
-    string[] collisions;
+    string[][] collisions;
 
     int total = cast(int) group.length;
     int completed = 0;
