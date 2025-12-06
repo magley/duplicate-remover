@@ -79,7 +79,7 @@ void main_gui()
 
     Ihandle* dir_pick_label = IupText(null);
     IupSetAttribute(dir_pick_label, "ACTIVE", "NO");
-    IupSetAttribute(dir_pick_label, "EXPAND", "YES");
+    IupSetAttribute(dir_pick_label, "EXPAND", "HORIZONTAL");
     IupSetHandle("dir_pick_label", dir_pick_label);
 
     Ihandle* dir_pick_btn = IupButton("", null);
@@ -89,6 +89,7 @@ void main_gui()
 
     Ihandle* dir_pick_container = IupHbox(dir_pick_label, dir_pick_btn, null);
     IupSetAttribute(dir_pick_container, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(dir_pick_container, "ALIGNMENT", "ACENTER");
     IupSetHandle("dir_pick_container", dir_pick_container);
 
     Ihandle* dir_info_label = IupLabel("Open a directory to get started");
@@ -110,7 +111,8 @@ void main_gui()
 
     Ihandle* params_hbox = IupHbox(params_workern_label, params_workern_text, null);
     IupSetHandle("params_hbox", params_hbox);
-    IupSetAttribute(params_hbox, "GAP", "50");
+    IupSetAttribute(params_hbox, "ALIGNMENT", "ACENTER");
+    IupSetAttribute(params_hbox, "GAP", "35");
 
     Ihandle* setup_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox);
     IupSetHandle("setup_vbox", setup_vbox);
@@ -150,6 +152,7 @@ void main_gui()
     );
     IupSetAttribute(run_hbox, "GAP", "4");
     IupSetAttribute(run_hbox, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(run_hbox, "ALIGNMENT", "ACENTER");
     IupSetHandle("run_hbox", run_hbox);
 
     Ihandle* run_time = IupLabel("");
@@ -186,6 +189,7 @@ void main_gui()
 
     Ihandle* result_btn_box = IupHbox(export_btn, delete_btn, null);
     IupSetAttribute(result_btn_box, "EXPAND", "HORIZONTAL");
+    IupSetAttribute(result_btn_box, "ALIGNMENT", "ACENTER");
     IupSetHandle("result_btn_box", result_btn_box);
 
     Ihandle* quick_select_list = IupList(null);
@@ -217,6 +221,7 @@ void main_gui()
     );
     IupSetAttribute(results_toolbar, "EXPAND", "HORIZONTAL");
     IupSetAttribute(results_toolbar, "GAP", "4");
+    IupSetAttribute(results_toolbar, "ALIGNMENT", "ACENTER");
     IupSetHandle("results_toolbar", results_toolbar);
 
     Ihandle* results_canvas = create_results_canvas("results_canvas");
