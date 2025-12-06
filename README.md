@@ -16,9 +16,9 @@
 
 ### Test 1
 
-| Size (GB) | Number of folders | Number of files | Contents
-| - | - | - | - |
-| 147,48 GB | 22 | 20062 | Images and videos |
+| Size (GB) | Number of folders | Number of files | Contents | Collision groups | Colliding files
+| - | - | - | - | - | - |
+| 147,48 GB | 22 | 20062 | Images and videos | 2079 | 4166 |
 
 - Tested on Windows 10, 22H2 
 - Data stored on an _ST1000DM010-2EP102_ HDD
@@ -31,7 +31,7 @@
 |-|-|-|
 | **Duplicate Remover** | warm | 0:46 |
 | **Duplicate Remover** | cold | 1:36 |
-| [Duplicate Cleaner 5 Pro](https://www.duplicatecleaner.com/) | hot | 1:50
+| [Duplicate Cleaner 5 Pro](https://www.duplicatecleaner.com/) | warm | 1:50
 | Duplicate Cleaner 5 Pro | cold | 2:12
 
 ---
