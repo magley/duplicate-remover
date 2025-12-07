@@ -30,6 +30,7 @@ class Arg
     ///   shorthand = Shorthand name (optional). Used in program as -{shorthand}
     ///   desc = Argument description, shown in help menus.
     ///   default_value = Default value for an argument, if none is specified.
+    ///   allowed_value = List of possible values. If any element is `null`, then this argument is optional.
     static Arg single(string name, string shorthand, string desc, string default_value, string[] allowed = [
     ])
     {
@@ -49,6 +50,7 @@ class Arg
     ///   shorthand = Shorthand name (optional). Used in program as -{shorthand}
     ///   desc = Argument description, shown in help menus.
     ///   default_value = Default value for an argument, if none is specified.
+    ///   allowed_value = List of possible values. If any element is `null`, then this argument is optional.
     static Arg multiple(string name, string shorthand, string desc, string[] default_value, string[] allowed = [
     ])
     {
@@ -114,7 +116,7 @@ class Arg
         {
             throw new ArgMissingValueException(name);
         }
-        if (values_[0] == null)
+        if (allowed.length == 0 && values_[0] == null)
         {
             throw new ArgMissingValueException(name);
         }
