@@ -18,7 +18,14 @@ import exporting;
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
 
+enum DeleteStrategy
+{
+    MoveToTrash = "trash",
+    DeleteForever = "remove"
+}
+
 private string[] modes = [EnumMembers!FileType];
+private string[] delete_modes = [EnumMembers!DeleteStrategy, null];
 
 void main_cli(string[] args)
 {
@@ -27,6 +34,7 @@ void main_cli(string[] args)
         .arg(Arg.single("workers", "w", "Number of workers", "4"))
         .arg(Arg.single("export-type", null, "Type of export", "JSON", modes))
         .arg(Arg.single("export-file", null, "Export desination", ""))
+        .arg(Arg.single("delete", "del", "Duplicate removal strategy", null, delete_modes))
         .set_callback((Command cmd) { cb_scan(cmd); });
 
     handle(root, args, "duplicate-remover");
@@ -45,6 +53,7 @@ void cb_scan(Command cmd)
 
     FileType export_type;
     string export_file;
+    DeleteStrategy delete_strategy;
 
     // -------------------------------------------------
     // COMPUTE ARGUMENTS
@@ -53,6 +62,7 @@ void cb_scan(Command cmd)
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
     export_type = cmd.args["export-type"].value().stringValToEnum!FileType;
     export_file = cmd.args["export-file"].value_or(null);
+    delete_strategy = cmd.args["delete"].value().stringValToEnum!DeleteStrategy(null);
     if (export_file !is null && strip(export_file).empty())
         export_file = null;
 
@@ -61,6 +71,12 @@ void cb_scan(Command cmd)
         dir = dir.replace("/", "\\");
         if (export_file !is null)
             export_file = export_file.replace("/", "\\");
+    }
+
+    if (delete_strategy == null && export_file == null)
+    {
+        writeln(CERR ~ "You must delete or export the results" ~ CCLEAR);
+        return;
     }
 
     // -------------------------------------------------
@@ -108,7 +124,17 @@ void cb_scan(Command cmd)
     {
         writefln("Exporting results as %s to %s", export_type, export_file);
 
-        ExportSettings settings;
+        ExportSettings settings; // TODO: Implement settings through the CLI.
         export_results(export_file, export_type, collisions, settings);
+    }
+
+    // -------------------------------------------------
+    // DELETE
+
+    if (delete_strategy != null)
+    {
+        writefln("Deleting duplicates using strategy: %s", delete_strategy);
+        // TODO: Which files to remove?
+        // TODO: Use threads like in the GUI
     }
 }

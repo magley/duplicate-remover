@@ -56,6 +56,18 @@ T stringValToEnum(T)(string s)
     throw new Exception("Unknown " ~ T.stringof ~ ": " ~ s);
 }
 
+T stringValToEnum(T)(string s, T fallback)
+{
+    foreach (member; __traits(allMembers, T))
+    {
+        enum value = __traits(getMember, T, member);
+        static if (is(typeof(value) == T))
+            if (value == s)
+                return value;
+    }
+    return fallback;
+}
+
 void moveToTrash(string path)
 {
     version (Windows)
