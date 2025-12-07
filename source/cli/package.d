@@ -2,6 +2,7 @@ module cli;
 
 import std.stdio;
 import std.array;
+import std.conv;
 import std.string;
 import std.datetime.stopwatch;
 
@@ -11,10 +12,14 @@ import util;
 
 import vendor.clyd;
 
+const int MIN_THREADS = 1;
+const int MAX_THREADS = 8;
+
 void main_cli(string[] args)
 {
     Command root = new Command("duplicate-remover", "Find and remove duplicate files")
         .arg(Arg.single("dir", "d", "Directory to scan", null))
+        .arg(Arg.single("workers", "w", "Number of workers", "4"))
         .set_callback((Command cmd) { cb_scan(cmd); });
 
     handle(root, args, "duplicate-remover");
@@ -34,7 +39,9 @@ void cb_scan(Command cmd)
     // -------------------------------------------------
 
     dir = cmd.args["dir"].value();
-    worker_count = 4;
+    worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
+
+    writefln("Begin scanning %s with %d workers...", dir, worker_count);
 
     version (Windows)
     {

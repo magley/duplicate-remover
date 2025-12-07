@@ -79,6 +79,25 @@ class Arg
         return a;
     }
 
+    /// Returns: The singular integer value of the argument.
+    /// Throws: On type mismatch, invalid value or value outside range.
+    int integer(int min, int max)
+    {
+        int v = integer();
+        if (v < min || v > max)
+        {
+            throw new ArgException(name, format("Must be between %d and %d", min, max));
+        }
+        return v;
+    }
+
+    /// Returns: The singular integer value of the argument.
+    /// Throws: On type mismatch or invalid value.
+    int integer()
+    {
+        return to!int(value());
+    }
+
     /// Returns: The singular value of the argument as a string.
     /// Throws: On type mismatch or invalid value.
     string value()
