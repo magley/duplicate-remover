@@ -695,32 +695,6 @@ class ProgressThread : Thread
     }
 }
 
-string time_to_string(ulong milisecs)
-{
-    ulong S = 1000;
-    ulong M = 60 * S;
-    ulong H = 60 * M;
-
-    ulong h = milisecs / H;
-    ulong m = (milisecs - (h * H)) / M;
-    ulong s = (milisecs - (m * M)) / S;
-    ulong ms = (milisecs - (s * S)) / 1;
-
-    if (milisecs < S)
-    {
-        return format("%dms", ms);
-    }
-    if (milisecs < M)
-    {
-        return format("%02ds", s);
-    }
-    if (milisecs < H)
-    {
-        return format("%02d:%02d", m, s);
-    }
-    return format("%02d:%02d:%02d", h, m, s);
-}
-
 extern (C) int cb_btn_sort_results_id(Ihandle* self)
 {
     sort_results(ResultsUI.SortType.Id);
