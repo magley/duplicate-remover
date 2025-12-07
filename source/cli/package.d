@@ -7,21 +7,57 @@ import std.datetime.stopwatch;
 
 import finder;
 import hasher;
+import util;
 
-void main_cli()
+import vendor.clyd;
+
+void main_cli(string[] args)
 {
-    writeln("Enter directory:");
-    string dir = readln().strip().replace("\\", "/");
+    Command root = new Command("duplicate-remover", "Find and remove duplicate files")
+        .arg(Arg.single("dir", "d", "Directory to scan", null))
+        .set_callback((Command cmd) { cb_scan(cmd); });
 
+    handle(root, args, "duplicate-remover");
+}
+
+void cb_scan(Command cmd)
+{
+    string dir;
+    int worker_count;
+    string[][] groups;
+    string[][] collisions;
     StopWatch sw;
+    long scan_time_ms = 0;
+    long collision_time_ms = 0;
+    GroupsHasher worker;
+
+    // -------------------------------------------------
+
+    dir = cmd.args["dir"].value();
+    worker_count = 4;
+
+    version (Windows)
+    {
+        dir = dir.replace("/", "\\");
+    }
+
     sw.start();
 
-    writeln("Scanning directory...");
-    string[][] groups = group_files(dir);
-    writeln("Found ", groups.length, " groups");
+    groups = group_files(dir);
+    scan_time_ms = sw.peek().total!"msecs"();
+    sw.reset();
 
-    writeln("Computing collisions...");
-    string[][] collisions = hash_groups_parallel(groups, 4);
+    writeln("Grouped in ", time_to_string(scan_time_ms));
+
+    worker = new GroupsHasher(groups, worker_count);
+
+    worker.run();
+
+    collisions = worker.collisions;
+
+    collision_time_ms = sw.peek().total!"msecs"();
+    sw.reset();
+
     uint conflicing_files = 0;
     foreach (c; collisions)
     {
@@ -29,8 +65,8 @@ void main_cli()
             conflicing_files++;
     }
 
-    long exec_ms = sw.peek().total!"msecs"();
-
-    writeln("Found ", collisions.length, " collision groups with ", conflicing_files, " colliding files in total");
-    writeln("Total time: ", exec_ms, "ms (", exec_ms / 1000.0, "s)");
+    writeln("Found collisions in ", time_to_string(collision_time_ms));
+    writeln("Total time: ", time_to_string(scan_time_ms + collision_time_ms));
+    writeln("Found ", collisions.length, " groups");
+    writeln("Found ", conflicing_files, " conflicting files");
 }

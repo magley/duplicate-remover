@@ -1,8 +1,8 @@
 import cli;
 import gui;
 
-void main()
+void main(string[] args)
 {
-	main_gui();
-	// main_cli();
+	//main_gui();
+	main_cli(args);
 }
