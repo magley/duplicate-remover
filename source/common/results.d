@@ -131,3 +131,16 @@ class ResultGroup
         }
     }
 }
+
+ResultGroup[] build_results(string[][] collisions, string base_directory)
+{
+    ResultGroup[] results = [];
+    reserve(results, collisions.length);
+    foreach (size_t index, group; collisions)
+    {
+        auto g = new ResultGroup(group, base_directory);
+        g.index = index;
+        results ~= g;
+    }
+    return results;
+}

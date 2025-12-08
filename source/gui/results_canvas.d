@@ -84,14 +84,7 @@ class ResultsUI
 
     void update(string[][] collisions)
     {
-        checkboxes = [];
-        reserve(checkboxes, collisions.length);
-        foreach (size_t index, group; collisions)
-        {
-            auto g = new ResultGroup(group, P.directory);
-            g.index = index;
-            checkboxes ~= g;
-        }
+        checkboxes = build_results(collisions, P.directory);
     }
 
     Vec2 get_pos_of_checkbox(size_t group, size_t checkbox)
