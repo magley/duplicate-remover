@@ -122,7 +122,8 @@ class Arg
         }
         if (allowed.length > 0 && !allowed.canFind(values_[0]))
         {
-            throw new ArgException(name, format("Value %s not allowed in %s", values_[0], allowed));
+            string v = values_[0];
+            throw new ArgException(name, format("Value %s not allowed in %s", v is null ? "''" : v, allowed));
         }
         return values_[0];
     }
@@ -157,7 +158,7 @@ class Arg
             {
                 if (!allowed.canFind(v))
                 {
-                    throw new ArgException(name, format("Value %s not allowed in %s", v, allowed));
+                    throw new ArgException(name, format("Value %s not allowed in %s", v is null ? "''" : v, allowed));
                 }
             }
         }
