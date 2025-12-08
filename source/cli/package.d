@@ -18,14 +18,17 @@ import exporting;
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
 
-enum DeleteStrategy
+enum SelectMode
 {
-    MoveToTrash = "trash",
-    DeleteForever = "remove"
+    AllButLargest = "except-largest",
+    AllButSmallest = "except-smallest",
+    OnlyLargest = "largest",
+    OnlySmallest = "smallest",
+    All = "all"
 }
 
 private string[] modes = [EnumMembers!FileType];
-private string[] delete_modes = [EnumMembers!DeleteStrategy, null];
+private string[] select_modes = [EnumMembers!SelectMode];
 
 void main_cli(string[] args)
 {
@@ -34,7 +37,9 @@ void main_cli(string[] args)
         .arg(Arg.single("workers", "w", "Number of workers", "4"))
         .arg(Arg.single("export-type", null, "Type of export", "JSON", modes))
         .arg(Arg.single("export-file", null, "Export desination", ""))
-        .arg(Arg.single("delete", "del", "Duplicate removal strategy", null, delete_modes))
+        .arg(Arg.single("select", "sel", "Selection mode", null, select_modes))
+        .arg(Arg.flag("trash", null, "Move select deuplicates to trash", false))
+        .arg(Arg.flag("delete", null, "Remove selected duplicates permanently", false))
         .set_callback((Command cmd) { cb_scan(cmd); });
 
     handle(root, args, "duplicate-remover");
@@ -53,7 +58,10 @@ void cb_scan(Command cmd)
 
     FileType export_type;
     string export_file;
-    DeleteStrategy delete_strategy;
+    SelectMode select_mode;
+    bool move_to_trash;
+    bool remove_permanently;
+    bool wanna_delete; // Computed argument.
 
     // -------------------------------------------------
     // COMPUTE ARGUMENTS
@@ -62,9 +70,12 @@ void cb_scan(Command cmd)
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
     export_type = cmd.args["export-type"].value().stringValToEnum!FileType;
     export_file = cmd.args["export-file"].value_or(null);
-    delete_strategy = cmd.args["delete"].value().stringValToEnum!DeleteStrategy(null);
+    select_mode = cmd.args["select"].value_or(null).stringValToEnum!SelectMode(null);
+    move_to_trash = cmd.args["trash"].is_set_flag();
+    remove_permanently = cmd.args["delete"].is_set_flag();
     if (export_file !is null && strip(export_file).empty())
         export_file = null;
+    wanna_delete = move_to_trash || remove_permanently;
 
     version (Windows)
     {
@@ -73,9 +84,15 @@ void cb_scan(Command cmd)
             export_file = export_file.replace("/", "\\");
     }
 
-    if (delete_strategy == null && export_file == null)
+    if (move_to_trash && remove_permanently)
     {
-        writeln(CERR ~ "You must delete or export the results" ~ CCLEAR);
+        throw new ArgException("trash", "Cannot set both trash and delete flags");
+        return;
+    }
+
+    if (!wanna_delete && export_file is null)
+    {
+        writeln(CERR ~ "You must either delete or export the results" ~ CCLEAR);
         return;
     }
 
@@ -131,9 +148,9 @@ void cb_scan(Command cmd)
     // -------------------------------------------------
     // DELETE
 
-    if (delete_strategy != null)
+    if (wanna_delete)
     {
-        writefln("Deleting duplicates using strategy: %s", delete_strategy);
+        writeln(select_mode);
         // TODO: Which files to remove?
         // TODO: Use threads like in the GUI
     }
