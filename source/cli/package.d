@@ -14,21 +14,13 @@ import exporting;
 
 import vendor.clyd;
 import exporting;
+import common.results;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
 
-enum SelectMode
-{
-    AllButLargest = "except-largest",
-    AllButSmallest = "except-smallest",
-    OnlyLargest = "largest",
-    OnlySmallest = "smallest",
-    All = "all"
-}
-
 private string[] modes = [EnumMembers!FileType];
-private string[] select_modes = [EnumMembers!SelectMode];
+private string[] select_modes = [EnumMembers!ResultQuickSelect_String];
 
 void main_cli(string[] args)
 {
@@ -58,7 +50,7 @@ void cb_scan(Command cmd)
 
     FileType export_type;
     string export_file;
-    SelectMode select_mode;
+    ResultQuickSelect_String select_mode;
     bool move_to_trash;
     bool remove_permanently;
     bool wanna_delete; // Computed argument.
@@ -70,7 +62,7 @@ void cb_scan(Command cmd)
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
     export_type = cmd.args["export-type"].value().stringValToEnum!FileType;
     export_file = cmd.args["export-file"].value_or(null);
-    select_mode = cmd.args["select"].value_or(null).stringValToEnum!SelectMode(null);
+    select_mode = cmd.args["select"].value_or(null).stringValToEnum!ResultQuickSelect_String(null);
     move_to_trash = cmd.args["trash"].is_set_flag();
     remove_permanently = cmd.args["delete"].is_set_flag();
     if (export_file !is null && strip(export_file).empty())

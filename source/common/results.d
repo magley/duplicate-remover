@@ -4,7 +4,9 @@ import std.array;
 import std.algorithm;
 import std.file;
 import std.path;
+import std.conv;
 import util;
+import std.traits;
 
 enum ResultQuickSelect
 {
@@ -14,6 +16,35 @@ enum ResultQuickSelect
     OnlySmallest,
     All,
     None,
+}
+
+enum ResultQuickSelect_String
+{
+    AllButLargest = "except-largest",
+    AllButSmallest = "except-smallest",
+    OnlyLargest = "largest",
+    OnlySmallest = "smallest",
+    All = "all",
+    None = "none",
+}
+
+ResultQuickSelect to(ResultQuickSelect_String e)
+{
+    final switch (e) with (ResultQuickSelect_String)
+    {
+    case AllButLargest:
+        return ResultQuickSelect.AllButLargest;
+    case AllButSmallest:
+        return ResultQuickSelect.AllButSmallest;
+    case OnlyLargest:
+        return ResultQuickSelect.OnlyLargest;
+    case OnlySmallest:
+        return ResultQuickSelect.OnlySmallest;
+    case All:
+        return ResultQuickSelect.All;
+    case None:
+        return ResultQuickSelect.None;
+    }
 }
 
 class Result
@@ -63,6 +94,11 @@ class ResultGroup
     size_t length() const
     {
         return arr.length;
+    }
+
+    void quick_select(ResultQuickSelect_String strategy)
+    {
+        quick_select(to(strategy));
     }
 
     void quick_select(ResultQuickSelect strategy)
