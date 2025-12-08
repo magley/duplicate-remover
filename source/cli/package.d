@@ -1,6 +1,7 @@
 module cli;
 
 import std.stdio;
+import std.algorithm;
 import std.array;
 import std.conv;
 import std.string;
@@ -15,6 +16,7 @@ import exporting;
 import vendor.clyd;
 import exporting;
 import common.results;
+import common.remove;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
@@ -140,10 +142,40 @@ void cb_scan(Command cmd)
     // -------------------------------------------------
     // DELETE
 
-    if (wanna_delete)
+    if (collisions.length == 0)
     {
-        writeln(select_mode);
-        // TODO: Which files to remove?
-        // TODO: Use threads like in the GUI
+        writeln("Nothing to remove");
+    }
+    else if (wanna_delete)
+    {
+        // Select files
+
+        ResultGroup[] result_groups = build_results(collisions, dir);
+        foreach (ResultGroup g; result_groups)
+        {
+            g.quick_select(select_mode);
+        }
+
+        // Extract filenames to delete
+
+        string[] files_to_delete;
+        foreach (ResultGroup g; result_groups)
+        {
+            files_to_delete ~= g.arr
+                .filter!((Result r) => r.checked)
+                .map!((Result r) => r.path_full)
+                .array();
+        }
+
+        // Log
+
+        if (move_to_trash)
+            writefln("Moving %d files to trash...", files_to_delete.length);
+        else
+            writefln("Removing %d files from disk...", files_to_delete.length);
+
+        // Delete
+
+        delete_selected_files(files_to_delete, move_to_trash, worker_count);
     }
 }
