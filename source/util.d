@@ -121,3 +121,26 @@ string time_to_string(ulong milisecs)
     }
     return format("%02d:%02d:%02d", h, m, s);
 }
+
+string to_size_byte_unit(ulong size_bytes)
+{
+    import std.format;
+
+    const ulong KB = 1024;
+    const ulong MB = 1_048_576;
+    const ulong GB = 1_073_741_824;
+
+    if (size_bytes < KB)
+    {
+        return format("%dB", size_bytes);
+    }
+    if (size_bytes < MB)
+    {
+        return format("%.2fKB", cast(float) size_bytes / KB);
+    }
+    if (size_bytes < GB)
+    {
+        return format("%.2fMB", cast(float) size_bytes / MB);
+    }
+    return format("%.2fGB", cast(float) size_bytes / GB);
+}

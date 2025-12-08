@@ -20,6 +20,7 @@ import util;
 import finder;
 import hasher;
 import std.checkedint;
+import common.results;
 
 private static cdCanvas* canvas;
 private string canvas_iuphandle;
@@ -45,56 +46,6 @@ Ihandle* create_results_canvas(string handle)
     return self;
 }
 
-class Checkbox
-{
-    string path_full;
-    string path;
-    bool checked;
-    size_t size_bytes;
-
-    this(string path_full, string path, bool checked)
-    {
-        this.path_full = path_full;
-        this.path = path;
-        this.checked = checked;
-        this.size_bytes = getSize(safepath(path_full));
-    }
-}
-
-class CheckboxGroup
-{
-    Checkbox[] arr;
-    ulong size_bytes;
-    string size_str;
-
-    // Order of the group inside an array.
-    size_t index = 0;
-
-    this(string[] filenames, string directory)
-    {
-        foreach (string p; filenames)
-        {
-            string path_rel = relativePath(p, directory);
-            arr ~= new Checkbox(p, path_rel, false);
-        }
-
-        compute_params();
-    }
-
-    private void compute_params()
-    {
-        size_bytes = 0;
-        foreach (c; arr)
-            size_bytes += c.size_bytes;
-        size_str = to_size_byte_unit(size_bytes);
-    }
-
-    size_t length() const
-    {
-        return arr.length;
-    }
-}
-
 struct Vec2
 {
     int x;
@@ -103,7 +54,7 @@ struct Vec2
 
 class ResultsUI
 {
-    CheckboxGroup[] checkboxes;
+    ResultGroup[] checkboxes;
     int scroll_y = 0;
 
     enum SortType
@@ -111,16 +62,6 @@ class ResultsUI
         Id,
         Size,
         FileCount
-    }
-
-    enum QuickSelect
-    {
-        AllButLargest,
-        AllButSmallest,
-        OnlyLargest,
-        OnlySmallest,
-        All,
-        None,
     }
 
     SortType sort_type = SortType.Id;
@@ -147,7 +88,7 @@ class ResultsUI
         reserve(checkboxes, collisions.length);
         foreach (size_t index, group; collisions)
         {
-            auto g = new CheckboxGroup(group, P.directory);
+            auto g = new ResultGroup(group, P.directory);
             g.index = index;
             checkboxes ~= g;
         }
@@ -173,7 +114,7 @@ class ResultsUI
         foreach (size_t j, group; checkboxes)
         {
             Vec2 pos;
-            foreach (size_t i, Checkbox c; group.arr)
+            foreach (size_t i, Result c; group.arr)
             {
                 pos = get_pos_of_checkbox(j, i);
 
@@ -200,7 +141,7 @@ class ResultsUI
     {
         foreach (size_t j, group; checkboxes)
         {
-            foreach (size_t i, Checkbox c; group.arr)
+            foreach (size_t i, Result c; group.arr)
             {
                 Vec2 pos = get_pos_of_checkbox(j, i);
 
@@ -264,7 +205,7 @@ class ResultsUI
         force_redraw();
     }
 
-    void quick_select(QuickSelect mode)
+    void quick_select(ResultQuickSelect mode)
     {
         foreach (g; checkboxes)
         {
@@ -274,34 +215,9 @@ class ResultsUI
         force_redraw();
     }
 
-    private void quick_select_group(CheckboxGroup group, QuickSelect mode, bool redraw = true)
+    private void quick_select_group(ResultGroup group, ResultQuickSelect strategy, bool redraw = true)
     {
-        foreach (c; group.arr)
-            c.checked = false;
-
-        final switch (mode) with (QuickSelect)
-        {
-        case AllButLargest:
-            foreach (c; group.arr.dup.sort!"a.size_bytes < b.size_bytes"[1 .. $])
-                c.checked = true;
-            break;
-        case AllButSmallest:
-            foreach (c; group.arr.dup.sort!"a.size_bytes > b.size_bytes"[1 .. $])
-                c.checked = true;
-            break;
-        case OnlyLargest:
-            group.arr.maxElement!"a.size_bytes".checked = true;
-            break;
-        case OnlySmallest:
-            group.arr.minElement!"a.size_bytes".checked = true;
-            break;
-        case All:
-            foreach (c; group.arr)
-                c.checked = true;
-            break;
-        case None:
-            break;
-        }
+        group.quick_select(strategy);
 
         if (redraw)
         {

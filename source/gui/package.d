@@ -17,6 +17,7 @@ import gui.results_canvas;
 import util;
 import finder;
 import hasher;
+import common.results;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
@@ -346,29 +347,6 @@ DirectoryInfo get_directory_info(string dir)
     return result;
 }
 
-string to_size_byte_unit(ulong size_bytes)
-{
-    import std.format;
-
-    const ulong KB = 1024;
-    const ulong MB = 1_048_576;
-    const ulong GB = 1_073_741_824;
-
-    if (size_bytes < KB)
-    {
-        return format("%dB", size_bytes);
-    }
-    if (size_bytes < MB)
-    {
-        return format("%.2fKB", cast(float) size_bytes / KB);
-    }
-    if (size_bytes < GB)
-    {
-        return format("%.2fMB", cast(float) size_bytes / MB);
-    }
-    return format("%.2fGB", cast(float) size_bytes / GB);
-}
-
 extern (C) int cb_params_workern_spinner_changed(Ihandle* self, int newval)
 {
     P.worker_count = newval;
@@ -648,7 +626,7 @@ extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
         P.results_ui = new ResultsUI();
 
     P.results_ui.update(P.worker.collisions);
-    P.results_ui.quick_select(ResultsUI.QuickSelect.AllButLargest);
+    P.results_ui.quick_select(ResultQuickSelect.AllButLargest);
     return IUP_DEFAULT;
 }
 
@@ -732,7 +710,7 @@ extern (C) int cb_btn_quick_select(Ihandle* self)
 
     Ihandle* quick_select_list = IupGetHandle("quick_select_list");
     int i = IupGetInt(quick_select_list, "VALUE") - 1;
-    ResultsUI.QuickSelect select_mode = cast(ResultsUI.QuickSelect) i;
+    ResultQuickSelect select_mode = cast(ResultQuickSelect) i;
 
     P.results_ui.quick_select(select_mode);
 
