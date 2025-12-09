@@ -36,11 +36,21 @@ void main_cli(string[] args)
         .arg(Arg.single("workers", "w", "Number of workers", "4"))
         .arg(Arg.single("export-type", null, "Type of export", "JSON", modes))
         .arg(Arg.single("export-file", null, "Export desination", ""))
-        .arg(Arg.single("export-json-quick-include", null, "Explicitly add list of files from each group", ExportSettings_JSON_QuickInclude_CmdString.None, export_json_quick_include))
+        .arg(Arg.single("export-json-quick-include", null, "(JSON export) Explicitly add list of files from each group", ExportSettings_JSON_QuickInclude_CmdString.None, export_json_quick_include))
         .arg(Arg.single("select", "sel", "Selection mode", null, select_modes))
         .arg(Arg.flag("trash", null, "Move select deuplicates to trash", false))
         .arg(Arg.flag("delete", null, "Remove selected duplicates permanently", false))
-        .set_callback((Command cmd) { cb_scan(cmd); });
+        .set_longer_desc(
+            `Duplicate remover scans a directory for identical files based
+on their hash. You must either pass export or removal arguments.
+Both work on selected files which are a subset of duplicates
+chosen through the selection strategy (--select). 
+Depending on the export type, you may pass additional settings,
+like --export-json-quick-include which is supported by the JSON
+exporter.
+You may delete files permanently (--delete) or move them to the
+Trash (--trash) if suported. 
+`).set_callback((Command cmd) { cb_scan(cmd); });
 
     handle(root, args, "duplicate-remover");
 }
