@@ -21,37 +21,13 @@ import common.remove;
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
 
+import cli.exporter;
+
 private string[] modes = [EnumMembers!FileType];
 private string[] select_modes = [EnumMembers!ResultQuickSelect_String, null];
 private string[] export_json_quick_include = [
     EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
 ];
-
-private enum ExportSettings_JSON_QuickInclude_CmdString
-{
-    None = "none",
-    LargestInEachGroup = "largest",
-    SmallestInEachGroup = "smallest",
-    AllButLargestInEachGroup = "except-largest",
-    AllButSmallestInEachGroup = "except-smallest",
-}
-
-ExportSettings_JSON.QuickInclude to(ExportSettings_JSON_QuickInclude_CmdString e)
-{
-    final switch (e) with (ExportSettings_JSON_QuickInclude_CmdString)
-    {
-    case None:
-        return ExportSettings_JSON.QuickInclude.None;
-    case LargestInEachGroup:
-        return ExportSettings_JSON.QuickInclude.LargestInEachGroup;
-    case SmallestInEachGroup:
-        return ExportSettings_JSON.QuickInclude.SmallestInEachGroup;
-    case AllButLargestInEachGroup:
-        return ExportSettings_JSON.QuickInclude.AllButLargestInEachGroup;
-    case AllButSmallestInEachGroup:
-        return ExportSettings_JSON.QuickInclude.AllButSmallestInEachGroup;
-    }
-}
 
 void main_cli(string[] args)
 {
@@ -209,30 +185,4 @@ void cb_scan(Command cmd)
 
         delete_selected_files(files_to_delete, move_to_trash, worker_count);
     }
-}
-
-private ExportSettings get_export_settings(FileType type, Command cmd)
-{
-    ExportSettings s;
-
-    final switch (type) with (FileType)
-    {
-    case JSON:
-        ExportSettings_JSON_QuickInclude_CmdString quick_include_str =
-            cmd.args["export-json-quick-include"]
-                .value_or(null)
-                .stringValToEnum!ExportSettings_JSON_QuickInclude_CmdString(
-                    ExportSettings_JSON_QuickInclude_CmdString.None
-            );
-        s.json.quick_include = to(quick_include_str);
-        break;
-    case JSON_Simple:
-        break;
-    case XML:
-        break;
-    case CSV:
-        break;
-    }
-
-    return s;
 }
