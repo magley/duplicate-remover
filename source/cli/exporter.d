@@ -37,13 +37,9 @@ ExportSettings get_export_settings(FileType type, Command cmd)
     final switch (type) with (FileType)
     {
     case JSON:
-        ExportSettings_JSON_QuickInclude_CmdString quick_include_str =
-            cmd.args["export-json-quick-include"]
-                .value_or(null)
-                .stringValToEnum!ExportSettings_JSON_QuickInclude_CmdString(
-                    ExportSettings_JSON_QuickInclude_CmdString.None
-            );
-        s.json.quick_include = to(quick_include_str);
+        s.json.quick_include = cmd.args["export-json-quick-include"]
+            .enumval_or(ExportSettings_JSON_QuickInclude_CmdString.None)
+            .to();
         break;
     case JSON_Simple:
         break;

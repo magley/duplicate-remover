@@ -7,6 +7,7 @@ import std.stdio;
 import core.stdc.stdlib;
 import std.algorithm;
 import vendor.clyd.exception;
+import util;
 
 class Arg
 {
@@ -142,6 +143,26 @@ class Arg
         {
             return fallback;
         }
+    }
+
+    /// Returns: Enum value from the argument's string.
+    /// Throws: If the value doesn't match any enum.
+    T enumval(T)()
+    {
+        string val_ = value();
+        T val_enum = stringValToEnum!T(val_);
+        return val_enum;
+    }
+
+    /// Params:
+    ///   fallback = Value which to return if the parameter is not defined 
+    /// Returns: Enum value from the argument's string.
+    /// Throws: On type mismatch or invalid value.
+    T enumval_or(T)(T fallback)
+    {
+        string val_ = value_or(null);
+        T val_enum = stringValToEnum!T(val_, fallback);
+        return val_enum;
     }
 
     /// Returns: Values as a sequence of strings for this argument.

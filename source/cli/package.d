@@ -68,10 +68,9 @@ void cb_scan(Command cmd)
 
     dir = cmd.args["dir"].value();
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
-    export_type = cmd.args["export-type"].value().stringValToEnum!FileType;
+    export_type = cmd.args["export-type"].enumval!FileType;
     export_file = cmd.args["export-file"].value_or(null);
-    select_mode = cmd.args["select"].value_or(null)
-        .stringValToEnum!ResultQuickSelect_String(null);
+    select_mode = cmd.args["select"].enumval_or!ResultQuickSelect_String(null);
     move_to_trash = cmd.args["trash"].is_set_flag();
     remove_permanently = cmd.args["delete"].is_set_flag();
     if (export_file !is null && strip(export_file).empty())
