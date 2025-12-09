@@ -22,7 +22,36 @@ const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
 
 private string[] modes = [EnumMembers!FileType];
-private string[] select_modes = [EnumMembers!ResultQuickSelect_String];
+private string[] select_modes = [EnumMembers!ResultQuickSelect_String, null];
+private string[] export_json_quick_include = [
+    EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
+];
+
+private enum ExportSettings_JSON_QuickInclude_CmdString
+{
+    None = "none",
+    LargestInEachGroup = "largest",
+    SmallestInEachGroup = "smallest",
+    AllButLargestInEachGroup = "except-largest",
+    AllButSmallestInEachGroup = "except-smallest",
+}
+
+ExportSettings_JSON.QuickInclude to(ExportSettings_JSON_QuickInclude_CmdString e)
+{
+    final switch (e) with (ExportSettings_JSON_QuickInclude_CmdString)
+    {
+    case None:
+        return ExportSettings_JSON.QuickInclude.None;
+    case LargestInEachGroup:
+        return ExportSettings_JSON.QuickInclude.LargestInEachGroup;
+    case SmallestInEachGroup:
+        return ExportSettings_JSON.QuickInclude.SmallestInEachGroup;
+    case AllButLargestInEachGroup:
+        return ExportSettings_JSON.QuickInclude.AllButLargestInEachGroup;
+    case AllButSmallestInEachGroup:
+        return ExportSettings_JSON.QuickInclude.AllButSmallestInEachGroup;
+    }
+}
 
 void main_cli(string[] args)
 {
@@ -31,6 +60,7 @@ void main_cli(string[] args)
         .arg(Arg.single("workers", "w", "Number of workers", "4"))
         .arg(Arg.single("export-type", null, "Type of export", "JSON", modes))
         .arg(Arg.single("export-file", null, "Export desination", ""))
+        .arg(Arg.single("export-json-quick-include", null, "Explicitly add list of files from each group", ExportSettings_JSON_QuickInclude_CmdString.None, export_json_quick_include))
         .arg(Arg.single("select", "sel", "Selection mode", null, select_modes))
         .arg(Arg.flag("trash", null, "Move select deuplicates to trash", false))
         .arg(Arg.flag("delete", null, "Remove selected duplicates permanently", false))
@@ -64,7 +94,8 @@ void cb_scan(Command cmd)
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
     export_type = cmd.args["export-type"].value().stringValToEnum!FileType;
     export_file = cmd.args["export-file"].value_or(null);
-    select_mode = cmd.args["select"].value_or(null).stringValToEnum!ResultQuickSelect_String(null);
+    select_mode = cmd.args["select"].value_or(null)
+        .stringValToEnum!ResultQuickSelect_String(null);
     move_to_trash = cmd.args["trash"].is_set_flag();
     remove_permanently = cmd.args["delete"].is_set_flag();
     if (export_file !is null && strip(export_file).empty())
@@ -135,7 +166,7 @@ void cb_scan(Command cmd)
     {
         writefln("Exporting results as %s to %s", export_type, export_file);
 
-        ExportSettings settings; // TODO: Implement settings through the CLI.
+        ExportSettings settings = get_export_settings(export_type, cmd);
         export_results(export_file, export_type, collisions, settings);
     }
 
@@ -178,4 +209,30 @@ void cb_scan(Command cmd)
 
         delete_selected_files(files_to_delete, move_to_trash, worker_count);
     }
+}
+
+private ExportSettings get_export_settings(FileType type, Command cmd)
+{
+    ExportSettings s;
+
+    final switch (type) with (FileType)
+    {
+    case JSON:
+        ExportSettings_JSON_QuickInclude_CmdString quick_include_str =
+            cmd.args["export-json-quick-include"]
+                .value_or(null)
+                .stringValToEnum!ExportSettings_JSON_QuickInclude_CmdString(
+                    ExportSettings_JSON_QuickInclude_CmdString.None
+            );
+        s.json.quick_include = to(quick_include_str);
+        break;
+    case JSON_Simple:
+        break;
+    case XML:
+        break;
+    case CSV:
+        break;
+    }
+
+    return s;
 }
