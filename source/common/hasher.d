@@ -1,11 +1,10 @@
-module hasher;
+module common.hasher;
 
 import std.stdio;
 import std.file;
 import std.digest.sha;
 import core.thread.osthread;
-import util;
-import finder;
+import common;
 import xxhash3;
 
 alias ProgressFunc = void delegate(int, int);

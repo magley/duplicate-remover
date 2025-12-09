@@ -3,7 +3,7 @@ module common.remove;
 import std.file;
 import std.stdio;
 import core.thread;
-import util;
+import common;
 
 void delete_selected_files(string[] files, bool move_to_trash, int thread_count)
 {

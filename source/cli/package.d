@@ -8,15 +8,8 @@ import std.string;
 import std.datetime.stopwatch;
 import std.traits;
 
-import finder;
-import hasher;
-import util;
-import exporting;
-
+import common;
 import vendor.clyd;
-import exporting;
-import common.results;
-import common.remove;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;

@@ -1,4 +1,4 @@
-module exporting;
+module common.exporting;
 
 import std.json;
 import std.file;
@@ -6,7 +6,7 @@ import std.stdio;
 import std.string;
 import std.algorithm;
 import std.array;
-import util;
+import common;
 
 enum FileType
 {

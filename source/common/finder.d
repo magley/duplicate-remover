@@ -1,4 +1,4 @@
-module finder;
+module common.finder;
 
 import std.stdio;
 import std.file;
@@ -6,7 +6,7 @@ import std.path;
 import std.algorithm;
 import std.array;
 
-import util;
+import common;
 
 struct GroupWithSize
 {

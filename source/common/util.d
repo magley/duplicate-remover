@@ -1,4 +1,4 @@
-module util;
+module common.util;
 
 import std.algorithm;
 import std.traits;

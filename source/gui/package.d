@@ -14,11 +14,7 @@ import vendor.iup;
 import gui.exporter;
 import gui.results_canvas;
 
-import util;
-import finder;
-import hasher;
-import common.results;
-import common.remove;
+import common;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
