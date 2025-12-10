@@ -1,5 +1,10 @@
 module cli.exporter;
 
+// dfmt off
+version (cli)
+{
+// dfmt on
+
 import common;
 import vendor.clyd;
 
@@ -49,4 +54,5 @@ ExportSettings get_export_settings(FileType type, Command cmd)
     }
 
     return s;
+}
 }

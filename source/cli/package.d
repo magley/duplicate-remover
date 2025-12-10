@@ -1,11 +1,16 @@
 module cli;
 
-import std.stdio;
+// dfmt off
+version (cli)
+{
+// dfmt on
+
 import std.algorithm;
 import std.array;
 import std.conv;
-import std.string;
 import std.datetime.stopwatch;
+import std.stdio;
+import std.string;
 import std.traits;
 
 import common;
@@ -17,7 +22,9 @@ const int MAX_THREADS = 8;
 import cli.exporter;
 
 private string[] modes = [EnumMembers!FileType];
-private string[] select_modes = [EnumMembers!ResultQuickSelect_String, null];
+private string[] select_modes = [
+    EnumMembers!ResultQuickSelect_String, null
+];
 private string[] export_json_quick_include = [
     EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
 ];
@@ -187,4 +194,5 @@ void cb_scan(Command cmd)
 
         delete_selected_files(files_to_delete, move_to_trash, worker_count);
     }
+}
 }

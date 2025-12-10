@@ -1,12 +1,17 @@
 module gui.exporter;
 
+// dfmt off
+version (gui)
+{
+// dfmt on
+
+import common;
+import gui;
+import std.conv;
 import std.stdio;
 import std.string;
-import std.conv;
-import vendor.iup;
-import gui;
 import std.traits;
-import common;
+import vendor.iup;
 
 private class ExportState
 {
@@ -210,4 +215,5 @@ private string filters_to_filterstring(string[2][] filters)
         result ~= format("%s|%s|", filter[1], filter[0]);
     }
     return result;
+}
 }

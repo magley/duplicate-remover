@@ -1,20 +1,25 @@
 module gui.results_canvas;
 
-import std.stdio;
+// dfmt off
+version (gui)
+{
+// dfmt on
+
+import core.thread.osthread;
+import std.algorithm;
+import std.array;
 import std.conv;
-import std.string;
 import std.datetime.stopwatch;
 import std.file;
 import std.path;
-import std.array;
-import std.algorithm;
-import core.thread.osthread;
+import std.stdio;
+import std.string;
 
-import vendor.iup;
 import vendor.cd;
+import vendor.iup;
 
-import gui.exporter;
 import gui;
+import gui.exporter;
 
 import common;
 
@@ -334,4 +339,5 @@ extern (C) int wheel_cb(Ihandle* ih, float delta, int, int, char*)
     }
 
     return IUP_DEFAULT;
+}
 }

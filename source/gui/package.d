@@ -1,20 +1,22 @@
 module gui;
 
-import std.stdio;
+// dfmt off
+version (gui)
+{
+// dfmt on
+
+import common;
+import core.thread.osthread;
+import gui.exporter;
+import gui.results_canvas;
+import std.algorithm;
 import std.conv;
-import std.string;
 import std.datetime.stopwatch;
 import std.file;
 import std.path;
-import std.algorithm;
-import core.thread.osthread;
-
+import std.stdio;
+import std.string;
 import vendor.iup;
-
-import gui.exporter;
-import gui.results_canvas;
-
-import common;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
@@ -662,4 +664,5 @@ private Ihandle* iup_button(string text, string image, string tip, string handle
     IupSetCallback(h, "ACTION", callback);
     IupSetHandle(handle.toStringz(), h);
     return h;
+}
 }
