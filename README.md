@@ -1,7 +1,40 @@
-# Duplicate Remover
+# Duplicate Remover - GUI and CLI tool for removing duplicate files
 
-### Find and remove duplicate files efficiently
+
 <img src="./docs/screenshot_01.png">
+
+```sh
+USAGE: duplicate-remover [--help] [<command>] [<options...>] [-- [<application arguments...>]]
+
+Find and remove duplicate files
+
+Duplicate remover scans a directory for identical files based
+on their hash. You must either pass export or removal arguments.
+Both work on selected files which are a subset of duplicates
+chosen through the selection strategy (--select).
+Depending on the export type, you may pass additional settings,
+like --export-json-quick-include which is supported by the JSON
+exporter.
+You may delete files permanently (--delete) or move them to the
+Trash (--trash) if suported.
+
+
+Options
+=======
+
+  -sel   --select                      Selection mode
+                                       Supported values: except-largest, except-smallest, largest, smallest, all, none, 
+  -d     --dir                         Directory to scan
+         --export-file                 Export desination
+         --delete                      Remove selected duplicates permanently
+         --help                        Show this help menu
+         --trash                       Move select deuplicates to trash
+  -w     --workers                     Number of workers
+         --export-type                 Type of export
+                                       Supported values: JSON, JSON Simple, XML, CSV
+         --export-json-quick-include   (JSON export) Explicitly add list of files from each group
+                                       Supported values: none, largest, smallest, except-largest, except-smallest
+```
 
 ## Features
 
@@ -11,6 +44,10 @@
 - Easily mark files for deletion
 - Delete files quickly (permanently or moving them to Trash)
 - Export scanning results to JSON
+
+## Download
+
+Download duplicate-remover [here](https://github.com/magley/duplicate-remover/releases).
 
 ## Benchmarks
 
