@@ -13,6 +13,7 @@
 		{
 			"name": "cli",
 			"versions": ["cli"],
+			"targetName": "duplicate_remover_cli",
 			"sourcePaths": [
 				"source/cli",
 				"source/common",
@@ -22,6 +23,7 @@
 		{
 			"name": "gui",
 			"versions": ["gui"],
+			"targetName": "duplicate_remover_gui",
 			"sourcePaths": [
 				"source/gui",
 				"source/common",
