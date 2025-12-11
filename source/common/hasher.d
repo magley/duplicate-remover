@@ -1,10 +1,10 @@
 module common.hasher;
 
-import std.stdio;
-import std.file;
-import std.digest.sha;
-import core.thread.osthread;
 import common;
+import core.thread.osthread;
+import std.digest.sha;
+import std.file;
+import std.stdio;
 import xxhash3;
 
 alias ProgressFunc = void delegate(int, int);
@@ -73,6 +73,7 @@ class GroupHasherThread : Thread
 {
     string[][] groups;
     string[][] collisions;
+    HashFunction func = HashFunction.XXHash3;
 
     int total = 1;
     int current = 0;
@@ -99,7 +100,7 @@ class GroupHasherThread : Thread
             total += g.length;
         }
 
-        collisions = hash_groups_partial_recursive(groups, k, &on_progress);
+        collisions = hash_groups_partial_recursive(groups, k, func, &on_progress);
     }
 
     void on_progress(int curr, int total)
@@ -122,7 +123,7 @@ string[][] hash_groups_parallel(string[][] groups, int nthreads)
     return g.collisions;
 }
 
-private string[][] hash_groups_partial_recursive(string[][] groups, int[] partial_k, ProgressFunc progress_cb)
+private string[][] hash_groups_partial_recursive(string[][] groups, int[] partial_k, HashFunction func, ProgressFunc progress_cb)
 {
     string[][] G = groups;
 
@@ -132,7 +133,7 @@ private string[][] hash_groups_partial_recursive(string[][] groups, int[] partia
 
         foreach (size_t i, string[] group; G)
         {
-            string[][] group_collisions = hash_group_partial(group, k, progress_cb);
+            string[][] group_collisions = hash_group_partial(group, k, func, progress_cb);
             collisions ~= group_collisions;
         }
 
@@ -146,25 +147,25 @@ private string[][] hash_groups_partial_recursive(string[][] groups, int[] partia
     return G;
 }
 
-private string[][] hash_groups(string[][] groups, ProgressFunc progress_cb)
+private string[][] hash_groups(string[][] groups, HashFunction func, ProgressFunc progress_cb)
 {
     string[][] collisions;
 
     foreach (size_t i, string[] group; groups)
     {
-        string[][] group_collisions = hash_group(group, progress_cb);
+        string[][] group_collisions = hash_group(group, func, progress_cb);
         collisions ~= group_collisions;
     }
 
     return collisions;
 }
 
-private string[][] hash_group(string[] group, ProgressFunc progress_cb)
+private string[][] hash_group(string[] group, HashFunction func, ProgressFunc progress_cb)
 {
-    return hash_group_partial(group, -1, progress_cb);
+    return hash_group_partial(group, -1, func, progress_cb);
 }
 
-private string[][] hash_group_partial(string[] group, int k, ProgressFunc progress_cb)
+private string[][] hash_group_partial(string[] group, int k, HashFunction func, ProgressFunc progress_cb)
 {
     string[][] collisions;
 
@@ -176,7 +177,7 @@ private string[][] hash_group_partial(string[] group, int k, ProgressFunc progre
     {
         try
         {
-            string hash = hash_file_partial(filename, k);
+            string hash = hash_file_partial(filename, k, func);
             completed++;
             hash_dict[hash] ~= filename;
             if (progress_cb !is null)
@@ -201,17 +202,19 @@ private string[][] hash_group_partial(string[] group, int k, ProgressFunc progre
     return collisions;
 }
 
-private string hash_file(string path)
+private string hash_file(string path, HashFunction func)
 {
-    return hash_file_partial(path, -1);
+    return hash_file_partial(path, -1, func);
 }
 
-private string hash_file_partial(string path, int k)
+private string hash_file_partial(string path, int k, HashFunction func)
 {
     const uint chunk_size = 1 * 1024;
 
-    // SHA256 h;
-    XXH_32 h;
+    Hasher h;
+    h.func = func;
+
+    h.begin();
 
     auto f = File(safepath(path), "rb");
     int chunk_index = 0;
@@ -226,7 +229,45 @@ private string hash_file_partial(string path, int k)
     }
 
     auto hash = h.finish();
-    string result = toHexString(hash).dup;
+    string result = toHexString(hash);
 
     return result;
+}
+
+enum HashFunction
+{
+    XXHash3,
+}
+
+struct Hasher
+{
+    HashFunction func;
+
+    union
+    {
+        XXH_32 xxh32;
+    }
+
+    void begin()
+    {
+
+    }
+
+    void put(scope const(ubyte)[] data...)
+    {
+        final switch (func) with (HashFunction)
+        {
+        case XXHash3:
+            xxh32.put(data);
+        }
+    }
+
+    ubyte[] finish()
+    {
+        final switch (func) with (HashFunction)
+        {
+        case XXHash3:
+            return xxh32.finish().dup;
+        }
+    }
 }
