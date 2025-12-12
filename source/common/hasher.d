@@ -5,7 +5,6 @@ import core.thread.osthread;
 import std.digest.sha;
 import std.file;
 import std.stdio;
-import xxhash3;
 
 alias ProgressFunc = void delegate(int, int);
 
@@ -14,6 +13,7 @@ class GroupsHasher
     // Input
     string[][] groups;
     int worker_count;
+    HashFunction hash_func = HashFunction.XXHash3;
 
     // State
     string[][] collisions;
@@ -35,7 +35,7 @@ class GroupsHasher
     {
         foreach (g; groups_split)
         {
-            GroupHasherThread worker = new GroupHasherThread(g);
+            GroupHasherThread worker = new GroupHasherThread(g, hash_func);
             workers ~= worker;
             worker.start();
         }
@@ -73,20 +73,21 @@ class GroupHasherThread : Thread
 {
     string[][] groups;
     string[][] collisions;
-    HashFunction func = HashFunction.XXHash3;
+    HashFunction hash_func;
 
     int total = 1;
     int current = 0;
 
     int[] k = [1];
 
-    this(GroupWithSize[] groups_with_size)
+    this(GroupWithSize[] groups_with_size, HashFunction hash_func)
     {
         foreach (GroupWithSize g; groups_with_size)
         {
             this.groups ~= g.group;
         }
         this.isDaemon(true);
+        this.hash_func = hash_func;
 
         super(&run);
     }
@@ -100,7 +101,7 @@ class GroupHasherThread : Thread
             total += g.length;
         }
 
-        collisions = hash_groups_partial_recursive(groups, k, func, &on_progress);
+        collisions = hash_groups_partial_recursive(groups, k, hash_func, &on_progress);
     }
 
     void on_progress(int curr, int total)
@@ -237,15 +238,20 @@ private string hash_file_partial(string path, int k, HashFunction func)
 enum HashFunction
 {
     XXHash3,
+    SHA256,
 }
 
 struct Hasher
 {
+    import std.digest.sha;
+    import xxhash3;
+
     HashFunction func;
 
     union
     {
         XXH_32 xxh32;
+        SHA256 sha256;
     }
 
     void begin()
@@ -259,6 +265,10 @@ struct Hasher
         {
         case XXHash3:
             xxh32.put(data);
+            break;
+        case SHA256:
+            sha256.put(data);
+            break;
         }
     }
 
@@ -267,6 +277,8 @@ struct Hasher
         final switch (func) with (HashFunction)
         {
         case XXHash3:
+            return xxh32.finish().dup;
+        case SHA256:
             return xxh32.finish().dup;
         }
     }
