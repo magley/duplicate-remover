@@ -13,7 +13,7 @@ class GroupsHasher
     // Input
     string[][] groups;
     int worker_count;
-    HashFunction hash_func = HashFunction.XXHash3;
+    HashFunction hash_func;
 
     // State
     string[][] collisions;
@@ -24,10 +24,11 @@ class GroupsHasher
     float progress = 0;
     bool finished = false;
 
-    this(string[][] groups, int worker_count)
+    this(string[][] groups, int worker_count, HashFunction hash_function)
     {
         this.groups = groups;
         this.worker_count = worker_count;
+        this.hash_func = hash_function;
         this.groups_split = split_groups_distribute_size_evenly(this.groups, this.worker_count);
     }
 
@@ -117,9 +118,9 @@ class GroupHasherThread : Thread
 }
 
 /// Prefer to use GroupsHasher directly, especially if you need to track state.
-string[][] hash_groups_parallel(string[][] groups, int nthreads)
+string[][] hash_groups_parallel(string[][] groups, int nthreads, HashFunction hash_function)
 {
-    GroupsHasher g = new GroupsHasher(groups, nthreads);
+    GroupsHasher g = new GroupsHasher(groups, nthreads, hash_function);
     g.run();
     return g.collisions;
 }

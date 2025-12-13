@@ -26,6 +26,7 @@ class ProgramState
     // ========== Input =======================================================
     string directory = "";
     int worker_count = 4;
+    HashFunction hash_function = HashFunction.XXHash3;
 
     // ========== Scanner =====================================================
 
@@ -109,10 +110,26 @@ void main_gui()
     IupSetAttribute(params_workern_text, "SPINMIN", to!string(MIN_THREADS).toStringz);
     IupSetAttribute(params_workern_text, "SPINMAX", to!string(MAX_THREADS).toStringz);
 
-    Ihandle* params_hbox = IupHbox(params_workern_label, params_workern_text, null);
+    Ihandle* params_hashfunc_label = IupLabel("Hash function:");
+    IupSetHandle("params_hashfunc_label", params_hashfunc_label);
+
+    Ihandle* params_hashfunc_list = IupList(null);
+    IupSetStrAttribute(params_hashfunc_list, "1", "XXHash3");
+    IupSetStrAttribute(params_hashfunc_list, "2", "SHA256");
+    IupSetStrAttribute(params_hashfunc_list, "3", null);
+    IupSetAttribute(params_hashfunc_list, "DROPDOWN", "YES");
+    IupSetAttribute(params_hashfunc_list, "VALUE", "1");
+    IupSetCallback(params_hashfunc_list, "VALUECHANGED_CB", &cb_params_hashfunc_valuechanged);
+    IupSetHandle("params_hashfunc_list", params_hashfunc_list);
+
+    Ihandle* params_hbox = IupHbox(
+        params_workern_label, params_workern_text,
+        params_hashfunc_label, params_hashfunc_list,
+        null
+    );
     IupSetHandle("params_hbox", params_hbox);
     IupSetAttribute(params_hbox, "ALIGNMENT", "ACENTER");
-    IupSetAttribute(params_hbox, "GAP", "35");
+    IupSetAttribute(params_hbox, "GAP", "20");
 
     Ihandle* setup_vbox = IupVbox(dir_pick_container, dir_info_label, params_hbox);
     IupSetHandle("setup_vbox", setup_vbox);
@@ -373,7 +390,7 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
 
 extern (C) int cb_btn_run_clicked(Ihandle* self)
 {
-    P.worker = new ScannerThread(P.directory, P.worker_count);
+    P.worker = new ScannerThread(P.directory, P.worker_count, P.hash_function);
     P.worker.start();
     return IUP_DEFAULT;
 }
@@ -480,6 +497,7 @@ class ScannerThread : Thread
     // Input
     string dir;
     int worker_count;
+    HashFunction hash_func;
 
     // Results
     string[][] groups;
@@ -495,10 +513,11 @@ class ScannerThread : Thread
     GroupsHasher worker;
     ProgressThread progress;
 
-    this(string directory, int worker_count)
+    this(string directory, int worker_count, HashFunction hash_func)
     {
         this.dir = directory;
         this.worker_count = worker_count;
+        this.hash_func = hash_func;
         this.isDaemon(true);
         super(&run);
     }
@@ -519,7 +538,7 @@ class ScannerThread : Thread
         scan_time_ms = sw.peek().total!"msecs"();
         sw.reset();
 
-        worker = new GroupsHasher(groups, worker_count);
+        worker = new GroupsHasher(groups, worker_count, hash_func);
         progress = new ProgressThread(this, worker);
 
         progress.start();
@@ -566,6 +585,13 @@ extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
 
     P.results_ui.update(P.worker.collisions);
     P.results_ui.quick_select(ResultQuickSelect.AllButLargest);
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_params_hashfunc_valuechanged(Ihandle* list)
+{
+    int index = IupGetInt(list, "VALUE") - 1;
+    P.hash_function = cast(HashFunction)(index);
     return IUP_DEFAULT;
 }
 
