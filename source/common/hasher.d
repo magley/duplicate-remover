@@ -279,7 +279,7 @@ struct Hasher
         case XXHash3:
             return xxh32.finish().dup;
         case SHA256:
-            return xxh32.finish().dup;
+            return sha256.finish().dup;
         }
     }
 }
