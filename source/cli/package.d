@@ -1,4 +1,5 @@
 module cli;
+import common.hasher;
 
 // dfmt off
 version (cli)
@@ -29,6 +30,21 @@ private string[] export_json_quick_include = [
     EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
 ];
 
+private string[] hash_functions = ["xxhash32", "sha256"];
+
+private HashFunction get_hash_func(string s)
+{
+    switch (s)
+    {
+    case "xxhash32":
+        return HashFunction.XXHash3;
+    case "sha256":
+        return HashFunction.SHA256;
+    default:
+        return HashFunction.XXHash3;
+    }
+}
+
 void main_cli(string[] args)
 {
     Command root = new Command("duplicate-remover", "Find and remove duplicate files")
@@ -38,6 +54,7 @@ void main_cli(string[] args)
         .arg(Arg.single("export-file", null, "Export desination", ""))
         .arg(Arg.single("export-json-quick-include", null, "(JSON export) Explicitly add list of files from each group", ExportSettings_JSON_QuickInclude_CmdString.None, export_json_quick_include))
         .arg(Arg.single("select", "sel", "Selection mode", null, select_modes))
+        .arg(Arg.single("hashfunc", null, "Hash function to use", hash_functions[0], hash_functions))
         .arg(Arg.flag("trash", null, "Move select deuplicates to trash", false))
         .arg(Arg.flag("delete", null, "Remove selected duplicates permanently", false))
         .set_longer_desc(
@@ -59,6 +76,7 @@ void cb_scan(Command cmd)
 {
     string dir;
     int worker_count;
+    HashFunction hash_func;
     string[][] groups;
     string[][] collisions;
     StopWatch sw;
@@ -78,6 +96,7 @@ void cb_scan(Command cmd)
 
     dir = cmd.args["dir"].value();
     worker_count = cmd.args["workers"].integer(MIN_THREADS, MAX_THREADS);
+    hash_func = get_hash_func(cmd.args["hashfunc"].value());
     export_type = cmd.args["export-type"].enumval!FileType;
     export_file = cmd.args["export-file"].value_or(null);
     select_mode = cmd.args["select"].enumval_or!ResultQuickSelect_String(null);
@@ -123,7 +142,7 @@ void cb_scan(Command cmd)
 
     writeln("Grouped in ", time_to_string(scan_time_ms));
 
-    worker = new GroupsHasher(groups, worker_count);
+    worker = new GroupsHasher(groups, worker_count, hash_func);
 
     worker.run();
 
