@@ -43,6 +43,7 @@ private HashFunction get_hash_func(string s)
     case "sha1":
         return HashFunction.SHA1;
     default:
+        writeln("Can't convert " ~ s ~ " to a known HashFunction");
         return HashFunction.XXHash3;
     }
 }
