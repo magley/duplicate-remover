@@ -240,6 +240,7 @@ enum HashFunction
 {
     XXHash3,
     SHA256,
+    SHA1,
 }
 
 struct Hasher
@@ -253,6 +254,7 @@ struct Hasher
     {
         XXH_32 xxh32;
         SHA256 sha256;
+        SHA1 sha1;
     }
 
     void begin()
@@ -270,6 +272,9 @@ struct Hasher
         case SHA256:
             sha256.put(data);
             break;
+        case SHA1:
+            sha1.put(data);
+            break;
         }
     }
 
@@ -281,6 +286,8 @@ struct Hasher
             return xxh32.finish().dup;
         case SHA256:
             return sha256.finish().dup;
+        case SHA1:
+            return sha1.finish().dup;
         }
     }
 }

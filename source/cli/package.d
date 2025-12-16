@@ -30,7 +30,7 @@ private string[] export_json_quick_include = [
     EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
 ];
 
-private string[] hash_functions = ["xxhash32", "sha256"];
+private string[] hash_functions = ["xxhash32", "sha256", "sha1"];
 
 private HashFunction get_hash_func(string s)
 {
@@ -40,6 +40,8 @@ private HashFunction get_hash_func(string s)
         return HashFunction.XXHash3;
     case "sha256":
         return HashFunction.SHA256;
+    case "sha1":
+        return HashFunction.SHA1;
     default:
         return HashFunction.XXHash3;
     }

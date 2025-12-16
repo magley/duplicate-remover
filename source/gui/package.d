@@ -116,7 +116,8 @@ void main_gui()
     Ihandle* params_hashfunc_list = IupList(null);
     IupSetStrAttribute(params_hashfunc_list, "1", "XXHash3");
     IupSetStrAttribute(params_hashfunc_list, "2", "SHA256");
-    IupSetStrAttribute(params_hashfunc_list, "3", null);
+    IupSetStrAttribute(params_hashfunc_list, "3", "SHA1");
+    IupSetStrAttribute(params_hashfunc_list, "4", null);
     IupSetAttribute(params_hashfunc_list, "DROPDOWN", "YES");
     IupSetAttribute(params_hashfunc_list, "VALUE", "1");
     IupSetCallback(params_hashfunc_list, "VALUECHANGED_CB", &cb_params_hashfunc_valuechanged);
