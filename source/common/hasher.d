@@ -241,10 +241,12 @@ enum HashFunction
     XXHash3,
     SHA256,
     SHA1,
+    MD5,
 }
 
 struct Hasher
 {
+    import std.digest.md;
     import std.digest.sha;
     import xxhash3;
 
@@ -255,6 +257,7 @@ struct Hasher
         XXH_32 xxh32;
         SHA256 sha256;
         SHA1 sha1;
+        MD5 md5;
     }
 
     void begin()
@@ -275,6 +278,9 @@ struct Hasher
         case SHA1:
             sha1.put(data);
             break;
+        case MD5:
+            md5.put(data);
+            break;
         }
     }
 
@@ -288,6 +294,8 @@ struct Hasher
             return sha256.finish().dup;
         case SHA1:
             return sha1.finish().dup;
+        case MD5:
+            return md5.finish().dup;
         }
     }
 }
