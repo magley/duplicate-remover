@@ -30,7 +30,7 @@ private string[] export_json_quick_include = [
     EnumMembers!ExportSettings_JSON_QuickInclude_CmdString
 ];
 
-private string[] hash_functions = ["xxhash32", "sha256", "sha1"];
+private string[] hash_functions = ["xxhash32", "sha256", "sha1", "md5"];
 
 private HashFunction get_hash_func(string s)
 {
@@ -42,8 +42,9 @@ private HashFunction get_hash_func(string s)
         return HashFunction.SHA256;
     case "sha1":
         return HashFunction.SHA1;
+    case "md5":
+        return HashFunction.MD5;
     default:
-        writeln("Can't convert " ~ s ~ " to a known HashFunction");
         return HashFunction.XXHash3;
     }
 }
