@@ -1,12 +1,24 @@
 module common.util;
 
 import std.algorithm;
+import std.format;
 import std.traits;
 import std.utf;
-import std.format;
 
+/// Uniformly split array into subarrays.
+///
+/// Params:
+///   - `arr` The array to split.
+///   - `parts` How many subarrays to create.
+///
+/// Returns: The result as an array of arrays.
 T[][] split_evenly(T)(T[] arr, ulong parts)
 {
+    if (parts == 0)
+    {
+        return [];
+    }
+
     T[][] result;
     result.length = parts;
 
@@ -26,6 +38,44 @@ T[][] split_evenly(T)(T[] arr, ulong parts)
     }
 
     return result;
+}
+
+unittest
+{
+    int[] arr = [];
+    int[][] split = split_evenly(arr, 5);
+    assert(split.length == 5);
+    foreach (int[] chunk; split)
+    {
+        assert(chunk.length == 0);
+    }
+}
+
+unittest
+{
+    int[] arr = [1, 2, 3];
+    int[][] split = split_evenly(arr, 0);
+    assert(split.length == 0);
+}
+
+unittest
+{
+    import std.math;
+
+    int[] arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+    for (int i = 1; i <= arr.length; i++)
+    {
+        int[][] split = split_evenly(arr, i);
+
+        int[] sizes;
+        foreach (int[] chunk; split)
+        {
+            sizes ~= cast(int) chunk.length;
+        }
+
+        assert(abs(maxElement(sizes) - minElement(sizes)) <= 1);
+    }
 }
 
 string safepath(string path)
