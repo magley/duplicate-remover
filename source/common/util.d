@@ -140,6 +140,31 @@ void moveToTrash(string path)
             throw new Exception(format("Could not move %s to trash. Error code %d", path, error));
         }
     }
+    else version (linux)
+    {
+        import std.datetime.systime;
+        import std.file;
+        import std.path;
+        import std.process;
+
+        // https://specifications.freedesktop.org/basedir/latest/
+        // https://wiki.archlinux.org/title/XDG_Base_Directory
+        // https://specifications.freedesktop.org/trash/latest/
+
+        const string xdg_data_home = environment.get("XDG_DATA_HOME", ".local/share");
+        const string trash_dir = xdg_data_home ~ "/Trash";
+        const string trash_file_dir = trash_dir ~ "/files";
+        const string trash_info_dir = trash_dir ~ "/info";
+
+        const string now = Clock.currTime().toISOExtString();
+        const string info = format("[Trash Info]\nPath=%s\nDeletionDate=%s\n", path, now);
+        const string info_path = trash_info_dir ~ baseName(path) ~ ".trashinfo";
+        std.file.write(info_path, info);
+
+        const string file_path = "";
+        rename(path, file_path);
+
+    }
     else
     {
         throw new Exception("Not implemented");
