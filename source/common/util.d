@@ -146,6 +146,7 @@ void moveToTrash(string path)
         import std.file;
         import std.path;
         import std.process;
+        import std.uuid;
 
         // https://specifications.freedesktop.org/basedir/latest/
         // https://wiki.archlinux.org/title/XDG_Base_Directory
@@ -163,14 +164,17 @@ void moveToTrash(string path)
         if (!exists(trash_info_dir))
             mkdir(trash_info_dir);
 
+        // Probably won't collide with each other nor with any other FreeDesktop
+        // Trash client implementation.
+        const string randname = format("duplicate-remover'%с-%s", baseName(path), randomUUID().toString());
+
         const string now = Clock.currTime().toISOExtString();
         const string info = format("[Trash Info]\nPath=%s\nDeletionDate=%s\n", path, now);
-        const string info_path = trash_info_dir ~ baseName(path) ~ ".trashinfo";
+        const string info_path = trash_info_dir ~ randname ~ ".trashinfo";
         std.file.write(info_path, info);
 
-        const string file_path = "";
+        const string file_path = trash_file_dir ~ randname;
         rename(path, file_path);
-
     }
     else
     {
