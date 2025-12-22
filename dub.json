@@ -22,7 +22,7 @@
 			]
 		},
 		{
-			"name": "gui",
+			"name": "gui-windows",
 			"versions": ["gui"],
 			"targetName": "duplicate_remover_gui",
 			"mainSourceFile": "source/gui/main.d",
@@ -32,17 +32,18 @@
 				"source/vendor/iup/",
 				"source/vendor/cd/"
 			],
+			"platforms": ["windows"],
 			"libs": [
-				"lib/cd",
-				"lib/cdim",
-				"lib/cdcontextplus",
-				"lib/freetype",
-				"lib/iup",
-				"lib/iupcd",
-				"lib/iupgl",
-				"lib/iupimglib",
-				"lib/iup_scintilla",
-				"lib/iupcontrols",
+				"lib/windows/cd",
+				"lib/windows/cdim",
+				"lib/windows/cdcontextplus",
+				"lib/windows/freetype",
+				"lib/windows/iup",
+				"lib/windows/iupcd",
+				"lib/windows/iupgl",
+				"lib/windows/iupimglib",
+				"lib/windows/iup_scintilla",
+				"lib/windows/iupcontrols",
 				"user32",
 				"gdi32",
 				"comctl32",
@@ -52,6 +53,30 @@
 				"advapi32",
 				"shell32",
 				"imm32"
+			] 
+		},
+		{
+			"name": "gui-linux",
+			"versions": ["gui"],
+			"targetName": "duplicate_remover_gui",
+			"mainSourceFile": "source/gui/main.d",
+			"sourcePaths": [
+				"source/gui",
+				"source/common",
+				"source/vendor/iup/",
+				"source/vendor/cd/"
+			],
+			"platforms": ["linux"],
+			"lflags": [
+				"lib/linux/libcd.so",
+				"lib/linux/libcdim.so",
+				"lib/linux/libcdcontextplus.so",
+				"lib/linux/libiup.so",
+				"lib/linux/libiupcd.so",
+				"lib/linux/libiupgl.so",
+				"lib/linux/libiupimglib.so",
+				"lib/linux/libiup_scintilla.so",
+				"lib/linux/libiupcontrols.so"
 			]
 		}
 	]
