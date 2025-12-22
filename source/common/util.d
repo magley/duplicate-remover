@@ -156,6 +156,13 @@ void moveToTrash(string path)
         const string trash_file_dir = trash_dir ~ "/files";
         const string trash_info_dir = trash_dir ~ "/info";
 
+        if (!exists(trash_dir))
+            mkdir(trash_dir);
+        if (!exists(trash_file_dir))
+            mkdir(trash_file_dir);
+        if (!exists(trash_info_dir))
+            mkdir(trash_info_dir);
+
         const string now = Clock.currTime().toISOExtString();
         const string info = format("[Trash Info]\nPath=%s\nDeletionDate=%s\n", path, now);
         const string info_path = trash_info_dir ~ baseName(path) ~ ".trashinfo";
