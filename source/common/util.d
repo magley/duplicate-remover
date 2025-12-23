@@ -153,9 +153,9 @@ void moveToTrash(string path)
         // https://specifications.freedesktop.org/trash/latest/
 
         const string xdg_data_home = environment.get("XDG_DATA_HOME", ".local/share");
-        const string trash_dir = xdg_data_home ~ "/Trash";
-        const string trash_file_dir = trash_dir ~ "/files";
-        const string trash_info_dir = trash_dir ~ "/info";
+        const string trash_dir = buildPath(xdg_data_home, "Trash");
+        const string trash_file_dir = buildPath(trash_dir, "files");
+        const string trash_info_dir = buildPath(trash_dir, "info");
 
         if (!exists(trash_dir))
             mkdir(trash_dir);
@@ -166,14 +166,14 @@ void moveToTrash(string path)
 
         // Probably won't collide with each other nor with any other FreeDesktop
         // Trash client implementation.
-        const string randname = format("duplicate-remover'%s-%s", baseName(path), randomUUID().toString());
+        const string randname = format("duplicate-remover-%s-%s", baseName(path), randomUUID().toString());
 
         const string now = Clock.currTime().toISOExtString();
         const string info = format("[Trash Info]\nPath=%s\nDeletionDate=%s\n", path, now);
-        const string info_path = trash_info_dir ~ randname ~ ".trashinfo";
+        const string info_path = buildPath(trash_info_dir, randname ~ ".trashinfo");
         std.file.write(info_path, info);
 
-        const string file_path = trash_file_dir ~ randname;
+        const string file_path = buildPath(trash_file_dir, randname);
         rename(path, file_path);
     }
     else
