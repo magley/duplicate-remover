@@ -166,7 +166,7 @@ void moveToTrash(string path)
 
         // Probably won't collide with each other nor with any other FreeDesktop
         // Trash client implementation.
-        const string randname = format("duplicate-remover'%с-%s", baseName(path), randomUUID().toString());
+        const string randname = format("duplicate-remover'%s-%s", baseName(path), randomUUID().toString());
 
         const string now = Clock.currTime().toISOExtString();
         const string info = format("[Trash Info]\nPath=%s\nDeletionDate=%s\n", path, now);
