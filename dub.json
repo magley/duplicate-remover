@@ -76,7 +76,8 @@
 				"lib/linux/libiupgl.so",
 				"lib/linux/libiupimglib.so",
 				"lib/linux/libiup_scintilla.so",
-				"lib/linux/libiupcontrols.so"
+				"lib/linux/libiupcontrols.so",
+				"lib/linux/libim.so"
 			]
 		}
 	]
