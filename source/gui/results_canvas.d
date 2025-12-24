@@ -34,6 +34,9 @@ Ihandle* create_results_canvas(string handle)
 
     Ihandle* self = IupCanvas(null);
 
+    // WARNING: If the GC can change P's address, we'll run into a segfault.
+    IupSetHandle("P", cast(void*) P);
+
     // IupSetAttribute(self, "SIZE", "300x300");
     IupSetAttribute(self, "EXPAND", "YES");
     IupSetAttribute(self, "CANFOCUS", "YES");
@@ -311,9 +314,17 @@ extern (C) int redraw_cb(Ihandle* self, float x, float y)
 
     cdCanvasClear(canvas);
 
-    if (P.results_ui !is null)
+    ProgramState P_ = cast(ProgramState)(IupGetHandle("P"));
+
+    if (P_ is null)
     {
-        P.results_ui.draw();
+        writeln("P is null");
+        return IUP_DEFAULT;
+    }
+
+    if (P_.results_ui !is null)
+    {
+        P_.results_ui.draw();
     }
 
     return IUP_DEFAULT;
@@ -321,11 +332,18 @@ extern (C) int redraw_cb(Ihandle* self, float x, float y)
 
 extern (C) int mouse_cb(Ihandle* ih, int button, int pressed, int x, int y, char* status)
 {
+    ProgramState P_ = cast(ProgramState)(IupGetHandle("P"));
+    if (P_ is null)
+    {
+        writeln("P is null");
+        return IUP_DEFAULT;
+    }
+
     if (button == IUP_BUTTON1 && pressed == 1)
     {
-        if (P.results_ui !is null)
+        if (P_.results_ui !is null)
         {
-            P.results_ui.on_mouse_click(x, y);
+            P_.results_ui.on_mouse_click(x, y);
         }
     }
     return IUP_DEFAULT;
@@ -333,9 +351,16 @@ extern (C) int mouse_cb(Ihandle* ih, int button, int pressed, int x, int y, char
 
 extern (C) int wheel_cb(Ihandle* ih, float delta, int, int, char*)
 {
-    if (P.results_ui !is null)
+    ProgramState P_ = cast(ProgramState)(IupGetHandle("P"));
+    if (P_ is null)
     {
-        P.results_ui.on_scroll(cast(int) delta);
+        writeln("P is null");
+        return IUP_DEFAULT;
+    }
+
+    if (P_.results_ui !is null)
+    {
+        P_.results_ui.on_scroll(cast(int) delta);
     }
 
     return IUP_DEFAULT;
