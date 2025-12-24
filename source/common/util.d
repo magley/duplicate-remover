@@ -94,6 +94,21 @@ string safepath(string path)
     }
 }
 
+unittest
+{
+    version (Windows)
+    {
+        string path = "C:/Users/aaa/foo/bar/baz/test.txt";
+        const static string PREFIX = `\\?\`;
+        assert(safepath(path).startsWith(PREFIX));
+    }
+    else
+    {
+        string path = "/usr/bin/a/b/c/d/e/f/g/test.txt";
+        assert(path == safepath(path));
+    }
+}
+
 T stringValToEnum(T)(string s)
 {
     foreach (member; __traits(allMembers, T))
