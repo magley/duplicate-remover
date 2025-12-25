@@ -49,6 +49,10 @@ Options
 
 Download duplicate-remover [here](https://github.com/magley/duplicate-remover/releases).
 
+## Build
+
+See [BUILDING.md](./BUILDING.md) for build instructions.
+
 ## Benchmarks
 
 ### Test 1
