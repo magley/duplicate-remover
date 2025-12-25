@@ -67,17 +67,18 @@
 				"source/vendor/cd/"
 			],
 			"platforms": ["linux"],
-			"lflags": [
-				"lib/linux/libcd.so",
-				"lib/linux/libcdim.so",
-				"lib/linux/libcdcontextplus.so",
-				"lib/linux/libiup.so",
-				"lib/linux/libiupcd.so",
-				"lib/linux/libiupgl.so",
-				"lib/linux/libiupimglib.so",
-				"lib/linux/libiup_scintilla.so",
-				"lib/linux/libiupcontrols.so",
-				"lib/linux/libim.so"
+			"lflags": ["-Llib/linux"],
+			"libs": [
+				"cd",
+				"cdim",
+				"cdcontextplus",
+				"iup",
+				"iupcd",
+				"iupgl",
+				"iupimglib",
+				"iup_scintilla",
+				"iupcontrols",
+				"im"
 			]
 		}
 	]
