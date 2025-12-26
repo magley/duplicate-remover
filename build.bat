@@ -13,6 +13,10 @@ if [%1] == [] (
     goto :eof
 )
 
+for %%p in (%*) do (
+    if "%%p" == "--release" set release=true
+)
+
 WHERE dub >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo Cannot execute `dub`.
@@ -24,11 +28,13 @@ set programVersion=%1%
 
 :: Build the program.
 
+if %release%==true set releaseFlag="--build=release"
+
 echo Building duplicate-remover %programVersion% CLI...
-dub build -c cli
+dub build %releaseFlag% -c cli
 
 echo Building duplicate-remover %programVersion% GUI...
-dub build -c gui-windows
+dub build %releaseFlag% -c gui-windows
 
 :: Rename binaries to subfolders
 
