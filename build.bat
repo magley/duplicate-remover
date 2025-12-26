@@ -13,7 +13,7 @@ if [%1] == [] (
     goto :eof
 )
 
-WHERE dub > $null 2>&1
+WHERE dub >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo Cannot execute `dub`.
     echo Install the D programming language to build duplicate-remover:
@@ -35,12 +35,12 @@ dub build -c gui-windows
 set cliName=duplicate-remover-cli_%programVersion%_win_x64
 set guiName=duplicate-remover-gui_%programVersion%_win_x64
 
-mkdir "./bin/%cliName%" 
-mkdir "./bin/%guiName%" 
+if not exist "./bin/%cliName%" mkdir "./bin/%cliName%" 
+if not exist "./bin/%guiName%" mkdir "./bin/%guiName%" 
 
-echo f | xcopy /Q /Y /F "./bin/duplicate_remover_cli.exe" "./bin/%cliName%/%cliName%.exe"
-echo f | xcopy /Q /Y /F "./bin/duplicate_remover_gui.exe" "./bin/%guiName%/%guiName%.exe"
+echo f | xcopy /Q /Y /F "./bin/duplicate_remover_cli.exe" "./bin/%cliName%/%cliName%.exe" >nul 2>&1
+echo f | xcopy /Q /Y /F "./bin/duplicate_remover_gui.exe" "./bin/%guiName%/%guiName%.exe" >nul 2>&1
 
 :: Copy dependencies
 
-robocopy "./lib/windows" "./bin/%guiName%" /S *.dll > $null 2>&1
+robocopy "./lib/windows" "./bin/%guiName%" /S *.dll >nul 2>&1
