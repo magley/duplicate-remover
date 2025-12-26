@@ -4,16 +4,20 @@
 
 ### Windows
 
-Locate to project root.
+Use [`build.bat`](./build.bat) to automatically build.
 
-Build using dub:
+Manual build instructions:
+
+- Locate to project root.
+
+- Build using dub:
 
 ```sh
 dub build -c cli
 dub build -c gui-windows 
 ```
 
-The GUI app has additional dependencies. `lib/` holds one such version of these
+- The GUI app has additional dependencies. `lib/` holds one such version of these
 dependencies. Copy the `.dll` libraries from `lib/windows/` into the build
 destination.
 
