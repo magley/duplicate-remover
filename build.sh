@@ -77,3 +77,10 @@ fi
  
 patchelf --set-rpath '$ORIGIN' "./bin/${cliName}/${cliName}"
 patchelf --set-rpath '$ORIGIN' "./bin/${guiName}/${guiName}"
+
+# Zip the folders, if needed.
+
+if [ "$shouldZip" = true ]; then
+    tar czf "./bin/${cliName}.tar.gz" -C ./bin "./${cliName}/"
+    tar czf "./bin/${guiName}.tar.gz" -C ./bin "./${guiName}/"
+fi
