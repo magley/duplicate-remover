@@ -65,3 +65,15 @@ mv "./bin/duplicate_remover_gui" "./bin/${guiName}/${guiName}"
 # Copy dependencies
 
 find ./lib/linux/ -name \*.so -exec cp {} "./bin/${guiName}/" \;
+
+# (Linux-exclusive) Patch RPATH
+
+if ! command -v dub &> /dev/null
+then
+    echo Cannot execute \`patchelf\`
+    echo You need patchelf to patch the binary so that RPATH points to ORIGIN
+    exit 1
+fi
+ 
+patchelf --set-rpath '$ORIGIN' "./bin/${cliName}/${cliName}"
+patchelf --set-rpath '$ORIGIN' "./bin/${guiName}/${guiName}"
