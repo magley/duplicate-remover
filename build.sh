@@ -41,7 +41,7 @@ programVersion=$1
 
 # Build the program
 
-if [ "$release" ]; then
+if [ "$release" = true ]; then
     releaseFlag="--build=release"
 fi
 
