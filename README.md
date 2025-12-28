@@ -68,25 +68,27 @@ See [BUILDING.md](./BUILDING.md) for build instructions.
 
 | Size (GB) | Number of folders | Number of files | Contents | Collision groups | Colliding files
 | - | - | - | - | - | - |
-| 147,48 GB | 22 | 20062 | Images and videos | 2079 | 4166 |
+| 149,59 GB | 22 | 20505 | Images and videos | 2080 | 4168 |
 
 - Tested on Windows 10, 22H2 
 - Data stored on an _ST1000DM010-2EP102_ HDD
-- Parallelism enabled
+- Parallelism enabled if possible (max 4 threads)
 - Fastest hash function available for each tool
 - Pre-hashing turned on if available
 - Scan time measured only
 
-| Tool | Warmness | Time elapsed |
+| Tool | Warmness | Time elapsed | 
 |-|-|-|
-| **Duplicate Remover** | warm | 0:46 |
-| **Duplicate Remover** | cold | 1:36 |
-| [Duplicate Cleaner 5 Pro](https://www.duplicatecleaner.com/) | warm | 1:50
-| Duplicate Cleaner 5 Pro | cold | 2:12
+| **Duplicate Remover** | warm | 0:01 |
+| [DUDE](https://github.com/PJDude/dude) | warm | 0:03 |
+| **Duplicate Remover** | cold | 1:21 |
+| [Duplicate Cleaner 5 Pro](https://www.duplicatecleaner.com/) | warm | 1:54 |
+| DUDE | cold | 2:00 |
+| Duplicate Cleaner 5 Pro | cold | 2:13 |
 
 ---
 
-(*) Benchmarks were not thoroughly tested
+<sup>*</sup> Benchmarks were not thoroughly tested, data warmness may not be accurate
 
 ## License
 
