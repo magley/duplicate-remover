@@ -1,4 +1,5 @@
-# Duplicate Remover - GUI and CLI tool for removing duplicate files
+# Duplicate Remover
+GUI and CLI tool for removing duplicate files
 
 
 <img src="./docs/screenshot_01.png">
@@ -11,7 +12,7 @@ Find and remove duplicate files
 Duplicate remover scans a directory for identical files based
 on their hash. You must either pass export or removal arguments.
 Both work on selected files which are a subset of duplicates
-chosen through the selection strategy (--select).
+chosen through the selection strategy (--select). 
 Depending on the export type, you may pass additional settings,
 like --export-json-quick-include which is supported by the JSON
 exporter.
@@ -34,22 +35,30 @@ Options
                                        Supported values: JSON, JSON Simple, XML, CSV
          --export-json-quick-include   (JSON export) Explicitly add list of files from each group
                                        Supported values: none, largest, smallest, except-largest, except-smallest
+         --hashfunc                    Hash function to use
+                                       Supported values: xxhash32, sha256, sha1, md5
 ```
 
 ## Features
 
+- Written in D for maximum efficiency
 - Extremely fast scanning through use of parallelism and scheduling algorithms
 - Fast file hashing using xxhash and pre-hashing mechanisms
-- Efficient and native GUI powered by the [IUP](https://www.tecgraf.puc-rio.br/iup/en/) library
+- Supports different hashing functions ([XXhash](https://github.com/Cyan4973/xxHash), SHA256, SHA1, MD5)
+- Lighweight, efficient and native GUI powered by the [IUP](https://www.tecgraf.puc-rio.br/iup/en/) library
+- Easy to use CLI
 - Easily mark files for deletion
 - Delete files quickly (permanently or moving them to Trash)
 - Export scanning results to JSON
 
 ## Download
 
-Download duplicate-remover [here](https://github.com/magley/duplicate-remover/releases).
+Download pre-built binaries for x64 Windows and Linux [here](https://github.com/magley/duplicate-remover/releases).
 
-## Build
+## Getting Started
+
+You can also build Duplicate Remover yourself.
+Duplicate Remover is written in D and requires the DMD compiler (LDC and GDC not tested).
 
 See [BUILDING.md](./BUILDING.md) for build instructions.
 
