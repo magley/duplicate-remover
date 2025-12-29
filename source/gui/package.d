@@ -269,9 +269,30 @@ void main_gui()
     Ihandle* menu_file_open = iup_menu_item("Open Folder...", "menu_file_open", cast(Icallback)&cb_menu_file_open);
     Ihandle* menu_file_exit = iup_menu_item("Exit", "menu_file_exit", cast(Icallback)&cb_exit_program);
     Ihandle* menu_file = IupMenu(menu_file_open, IupSeparator(), menu_file_exit, null);
+    IupSetHandle("menu_file", menu_file);
+    Ihandle* submenu_file = IupSubmenu("File", menu_file);
+    IupSetHandle("submenu_file", submenu_file);
+
+    Ihandle* menu_scan = IupMenu(null);
+    IupSetHandle("menu_scan", menu_scan);
+    Ihandle* submenu_scan = IupSubmenu("Scan", menu_scan);
+    IupSetHandle("submenu_scan", submenu_scan);
+
+    Ihandle* menu_results = IupMenu(null);
+    IupSetHandle("menu_results", menu_results);
+    Ihandle* submenu_results = IupSubmenu("Results", menu_results);
+    IupSetHandle("submenu_results", submenu_results);
+
+    Ihandle* menu_about = IupMenu(null);
+    IupSetHandle("menu_about", menu_about);
+    Ihandle* submenu_about = IupSubmenu("About", menu_about);
+    IupSetHandle("submenu_about", submenu_about);
 
     Ihandle* menu_bar = IupMenu(
-        IupSubmenu("File", menu_file),
+        submenu_file,
+        submenu_scan,
+        submenu_results,
+        submenu_about,
         null,
     );
 
