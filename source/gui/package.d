@@ -271,6 +271,9 @@ void main_gui()
     IupSetCallback(menu_file_open, "ACTION", cast(Icallback)&cb_menu_file_open);
 
     Ihandle* menu_file_exit = IupItem("Exit", null);
+    IupSetHandle("menu_file_exit", menu_file_open);
+    IupSetCallback(menu_file_exit, "ACTION", cast(Icallback)&cb_exit_program);
+
     Ihandle* menu_file = IupMenu(menu_file_open, IupSeparator(), menu_file_exit, null);
     Ihandle* menu_bar = IupMenu(
         IupSubmenu("File", menu_file),
@@ -718,6 +721,11 @@ extern (C) int cb_menu_file_open(Ihandle* self)
 {
     open_directory_picker_dialog();
     return IUP_DEFAULT;
+}
+
+extern (C) int cb_exit_program(Ihandle* self)
+{
+    return IUP_CLOSE;
 }
 
 //
