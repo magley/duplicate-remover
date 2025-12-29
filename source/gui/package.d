@@ -266,8 +266,12 @@ void main_gui()
     // Menu bar
     // ========================================================================
 
+    Ihandle* menu_file_open = IupItem("Open Folder...", null);
+    IupSetHandle("menu_file_open", menu_file_open);
+    IupSetCallback(menu_file_open, "ACTION", cast(Icallback)&cb_menu_file_open);
+
     Ihandle* menu_file_exit = IupItem("Exit", null);
-    Ihandle* menu_file = IupMenu(menu_file_exit, null);
+    Ihandle* menu_file = IupMenu(menu_file_open, IupSeparator(), menu_file_exit, null);
     Ihandle* menu_bar = IupMenu(
         IupSubmenu("File", menu_file),
         null,
@@ -298,6 +302,12 @@ void main_gui()
 }
 
 extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
+{
+    open_directory_picker_dialog();
+    return IUP_DEFAULT;
+}
+
+private void open_directory_picker_dialog()
 {
     Ihandle* file_dlg = IupFileDlg();
 
@@ -335,8 +345,6 @@ extern (C) int cb_open_directory_picker_dialog(Ihandle* self)
         }
     }
     IupDestroy(file_dlg);
-
-    return IUP_DEFAULT;
 }
 
 struct DirectoryInfo
@@ -705,4 +713,13 @@ private Ihandle* iup_button(string text, string image, string tip, string handle
     IupSetHandle(handle.toStringz(), h);
     return h;
 }
+
+extern (C) int cb_menu_file_open(Ihandle* self)
+{
+    open_directory_picker_dialog();
+    return IUP_DEFAULT;
 }
+
+//
+}
+//
