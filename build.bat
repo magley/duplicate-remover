@@ -67,9 +67,6 @@ robocopy "./lib/windows" "./bin/%guiName%" /S *.dll >nul 2>&1
 :: Zip the folders, if needed.
 
 if %shouldZip% == true (
-    WHERE tar >nul 2>&1
-    if %ERRORLEVEL% == 0 (
-        powershell "Compress-Archive" "./bin/%cliName%/*" "./bin/%cliName%.zip" >nul 2>&1
-        powershell "Compress-Archive" "./bin/%guiName%/*" "./bin/%guiName%.zip" >nul 2>&1
-    )
+    powershell "Compress-Archive" "./bin/%cliName%/*" "./bin/%cliName%.zip" >nul 2>&1
+    powershell "Compress-Archive" "./bin/%guiName%/*" "./bin/%guiName%.zip" >nul 2>&1
 )
