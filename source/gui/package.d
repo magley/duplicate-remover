@@ -263,6 +263,17 @@ void main_gui()
     IupSetAttribute(results_frame, "ACTIVE", "NO");
 
     // ========================================================================
+    // Menu bar
+    // ========================================================================
+
+    Ihandle* menu_file_exit = IupItem("Exit", null);
+    Ihandle* menu_file = IupMenu(menu_file_exit, null);
+    Ihandle* menu_bar = IupMenu(
+        IupSubmenu("File", menu_file),
+        null,
+    );
+
+    // ========================================================================
     // Main
     // ========================================================================
 
@@ -273,6 +284,7 @@ void main_gui()
     IupSetAttribute(main_dlg, "TITLE", "Duplicate Remover");
     IupSetAttribute(main_dlg, "MINSIZE", "400x500");
     IupSetAttribute(main_dlg, "MARGIN", "3x3");
+    IupSetAttributeHandle(main_dlg, "MENU", menu_bar);
     IupSetHandle("main", main_dlg);
 
     IupShowXY(main_dlg, IUP_CENTER, IUP_CENTER);
