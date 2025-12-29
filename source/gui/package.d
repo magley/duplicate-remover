@@ -266,15 +266,10 @@ void main_gui()
     // Menu bar
     // ========================================================================
 
-    Ihandle* menu_file_open = IupItem("Open Folder...", null);
-    IupSetHandle("menu_file_open", menu_file_open);
-    IupSetCallback(menu_file_open, "ACTION", cast(Icallback)&cb_menu_file_open);
-
-    Ihandle* menu_file_exit = IupItem("Exit", null);
-    IupSetHandle("menu_file_exit", menu_file_open);
-    IupSetCallback(menu_file_exit, "ACTION", cast(Icallback)&cb_exit_program);
-
+    Ihandle* menu_file_open = iup_menu_item("Open Folder...", "menu_file_open", cast(Icallback)&cb_menu_file_open);
+    Ihandle* menu_file_exit = iup_menu_item("Exit", "menu_file_exit", cast(Icallback)&cb_exit_program);
     Ihandle* menu_file = IupMenu(menu_file_open, IupSeparator(), menu_file_exit, null);
+
     Ihandle* menu_bar = IupMenu(
         IupSubmenu("File", menu_file),
         null,
@@ -714,6 +709,14 @@ private Ihandle* iup_button(string text, string image, string tip, string handle
     IupSetStrAttribute(h, "TIP", tip is null ? null : tip.toStringz());
     IupSetCallback(h, "ACTION", callback);
     IupSetHandle(handle.toStringz(), h);
+    return h;
+}
+
+private Ihandle* iup_menu_item(string text, string handle, Icallback callback)
+{
+    Ihandle* h = IupItem(text.toStringz(), null);
+    IupSetHandle(handle.toStringz(), h);
+    IupSetCallback(h, "ACTION", callback);
     return h;
 }
 
