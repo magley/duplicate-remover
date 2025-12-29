@@ -296,6 +296,9 @@ void main_gui()
         null,
     );
 
+    IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "NO");
+    IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "NO");
+
     // ========================================================================
     // Main
     // ========================================================================
@@ -361,6 +364,7 @@ private void open_directory_picker_dialog()
             );
             IupSetStrAttribute(IupGetHandle("dir_info_label"), "TITLE", dir_info.toStringz());
             IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+            IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
         }
     }
     IupDestroy(file_dlg);
@@ -568,6 +572,8 @@ class ScannerThread : Thread
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "NO");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", "");
         IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE", "Collision groups:");
@@ -602,6 +608,8 @@ class ScannerThread : Thread
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
             format("Time: %s", time_to_string(total_time_ms)).toStringz()
