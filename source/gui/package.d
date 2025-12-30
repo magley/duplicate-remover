@@ -775,7 +775,18 @@ extern (C) int cb_help_about(Ihandle* self)
     // dfmt on
     items ~= null;
 
-    Ihandle* layout = IupVboxv(items.ptr);
+    Ihandle* vbox_items = IupVboxv(items.ptr);
+
+    Ihandle* btn_ok = IupButton("Ok", null);
+    IupSetAttribute(btn_ok, "PADDING", "12x4");
+    IupSetCallback(btn_ok, "ACTION", &cb_send_iup_close);
+
+    Ihandle* buttons = IupHbox(
+        btn_ok,
+        null
+    );
+
+    Ihandle* layout = IupVbox(vbox_items, IupFill(), buttons, null);
     IupSetAttribute(layout, "EXPAND", "YES");
     IupSetAttribute(layout, "GAP", "8");
 
@@ -790,6 +801,11 @@ extern (C) int cb_help_about(Ihandle* self)
     IupDestroy(dlg);
 
     return IUP_DEFAULT;
+}
+
+extern (C) int cb_send_iup_close(Ihandle* self)
+{
+    return IUP_CLOSE;
 }
 
 //
