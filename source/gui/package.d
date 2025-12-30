@@ -770,7 +770,8 @@ extern (C) int cb_help_about(Ihandle* self)
         IupLabel("Version: 0.3.0 beta"), 
         IupHbox(IupLabel("Written in"),IupLink("https://dlang.org/", "the D programming language"), null).IupSetAttributes("MARGIN=0x0"),
         IupHbox(IupLabel("GUI library:"),IupLink("https://www.tecgraf.puc-rio.br/iup/", "IUP"), null).IupSetAttributes("MARGIN=0x0"),
-        IupHbox(IupLink("https://github.com/magley/duplicate-remover", "Source code"), IupLabel("(Github)"), null).IupSetAttributes("MARGIN=0x0"),
+        IupHbox(IupLabel("Licensed under the"),IupLink("https://opensource.org/license/bsd-2-clause", "BSD 2-Clause License"), null).IupSetAttributes("MARGIN=0x0"),
+        IupHbox(IupLabel("Download source code"), IupLink("https://github.com/magley/duplicate-remover", "here"), null).IupSetAttributes("MARGIN=0x0"),
     ];
     // dfmt on
     items ~= null;
