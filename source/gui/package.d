@@ -775,7 +775,7 @@ extern (C) int cb_help_about(Ihandle* self)
     // dfmt on
     items ~= null;
 
-    Ihandle* layout = IupVboxv(&items[0]);
+    Ihandle* layout = IupVboxv(items.ptr);
     IupSetAttribute(layout, "EXPAND", "YES");
     IupSetAttribute(layout, "GAP", "8");
 
