@@ -763,8 +763,19 @@ extern (C) int cb_exit_program(Ihandle* self)
 
 extern (C) int cb_help_about(Ihandle* self)
 {
+    // dfmt off
+    Ihandle*[] items = [
+        IupLabel("Duplicate Remover").IupSetAttributes("FONTSIZE=16"),
+        IupHbox(IupLabel("Created by"),IupLink("https://github.com/magley", "magley"), null).IupSetAttributes("MARGIN=0x0"),
+        IupLabel("Version: 0.3.0 beta"), 
+        IupHbox(IupLabel("Written in"),IupLink("https://dlang.org/", "the D programming language"), null).IupSetAttributes("MARGIN=0x0"),
+        IupHbox(IupLabel("GUI library:"),IupLink("https://www.tecgraf.puc-rio.br/iup/", "IUP"), null).IupSetAttributes("MARGIN=0x0"),
+        IupHbox(IupLink("https://github.com/magley/duplicate-remover", "Source code"), IupLabel("(Github)"), null).IupSetAttributes("MARGIN=0x0"),
+    ];
+    // dfmt on
+    items ~= null;
 
-    Ihandle* layout = IupVbox(null);
+    Ihandle* layout = IupVboxv(&items[0]);
     IupSetAttribute(layout, "EXPAND", "YES");
     IupSetAttribute(layout, "GAP", "8");
 
