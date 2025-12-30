@@ -283,16 +283,17 @@ void main_gui()
     Ihandle* submenu_results = IupSubmenu("Results", menu_results);
     IupSetHandle("submenu_results", submenu_results);
 
-    Ihandle* menu_about = IupMenu(null);
-    IupSetHandle("menu_about", menu_about);
-    Ihandle* submenu_about = IupSubmenu("About", menu_about);
-    IupSetHandle("submenu_about", submenu_about);
+    Ihandle* menu_help_about = iup_menu_item("About", "menu_help_about", cast(Icallback)&cb_help_about);
+    Ihandle* menu_help = IupMenu(menu_help_about, null);
+    IupSetHandle("menu_help", menu_help);
+    Ihandle* submenu_help = IupSubmenu("Help", menu_help);
+    IupSetHandle("submenu_help", submenu_help);
 
     Ihandle* menu_bar = IupMenu(
         submenu_file,
         submenu_scan,
         submenu_results,
-        submenu_about,
+        submenu_help,
         null,
     );
 
@@ -758,6 +759,10 @@ extern (C) int cb_menu_file_open(Ihandle* self)
 extern (C) int cb_exit_program(Ihandle* self)
 {
     return IUP_CLOSE;
+}
+
+extern (C) int cb_help_about(Ihandle* self)
+{
 }
 
 //
