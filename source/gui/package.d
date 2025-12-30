@@ -763,6 +763,22 @@ extern (C) int cb_exit_program(Ihandle* self)
 
 extern (C) int cb_help_about(Ihandle* self)
 {
+
+    Ihandle* layout = IupVbox(null);
+    IupSetAttribute(layout, "EXPAND", "YES");
+    IupSetAttribute(layout, "GAP", "8");
+
+    Ihandle* dlg = IupDialog(layout);
+    IupSetAttribute(dlg, "TITLE", "About Duplicate Remover");
+    IupSetAttribute(dlg, "SIMULATEMODAL", "YES");
+    IupSetAttribute(dlg, "MINSIZE", "300x300");
+    IupSetAttribute(dlg, "MARGIN", "11x8");
+    IupSetAttribute(dlg, "RESIZE", "NO");
+
+    IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
+    IupDestroy(dlg);
+
+    return IUP_DEFAULT;
 }
 
 //
