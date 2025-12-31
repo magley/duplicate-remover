@@ -304,6 +304,9 @@ void main_gui()
     // Main
     // ========================================================================
 
+    Ihandle* clipboard = IupClipboard();
+    IupSetHandle("clipboard", clipboard);
+
     Ihandle* main_vbox = IupVbox(setup_frame, runner_frame, results_frame, null);
     IupSetHandle("main_vbox", main_vbox);
 
@@ -782,8 +785,13 @@ extern (C) int cb_help_about(Ihandle* self)
     IupSetAttribute(btn_ok, "PADDING", "12x4");
     IupSetCallback(btn_ok, "ACTION", &cb_send_iup_close);
 
+    Ihandle* btn_clipboard = IupButton("Copy to clipboard", null);
+    IupSetAttribute(btn_clipboard, "PADDING", "12x4");
+    IupSetCallback(btn_clipboard, "ACTION", &cb_help_about_copy_to_clipboard);
+
     Ihandle* buttons = IupHbox(
         btn_ok,
+        btn_clipboard,
         null
     );
 
@@ -800,6 +808,24 @@ extern (C) int cb_help_about(Ihandle* self)
 
     IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
     IupDestroy(dlg);
+
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_help_about_copy_to_clipboard(Ihandle* self)
+{
+    string help_contents = q"(
+    Duplicate Remover
+    Created by https://github.com/magley
+    Version: 0.3.0 beta
+    Written in the D programming language
+    GUI library: IUP
+    Licensed under the BSD 2-Clause License
+    Download source code: https://github.com/magley/duplicate-remover
+    )";
+
+    Ihandle* clipboard = IupGetHandle("clipboard");
+    IupSetStrAttribute(clipboard, "TEXT", help_contents.toStringz());
 
     return IUP_DEFAULT;
 }
