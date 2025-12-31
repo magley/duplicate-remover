@@ -814,15 +814,13 @@ extern (C) int cb_help_about(Ihandle* self)
 
 extern (C) int cb_help_about_copy_to_clipboard(Ihandle* self)
 {
-    string help_contents = q"(
-    Duplicate Remover
-    Created by https://github.com/magley
-    Version: 0.3.0 beta
-    Written in the D programming language
-    GUI library: IUP
-    Licensed under the BSD 2-Clause License
-    Download source code: https://github.com/magley/duplicate-remover
-    )";
+    string help_contents = q"(Duplicate Remover
+Created by https://github.com/magley
+Version: 0.3.0 beta
+Written in the D programming language
+GUI library: IUP
+Licensed under the BSD 2-Clause License
+Download source code: https://github.com/magley/duplicate-remover)";
 
     Ihandle* clipboard = IupGetHandle("clipboard");
     IupSetStrAttribute(clipboard, "TEXT", help_contents.toStringz());
