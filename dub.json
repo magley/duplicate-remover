@@ -6,6 +6,9 @@
 	"targetPath": "./bin/",
 	"description": "Program for removing duplicate files.",
 	"license": "BSD-2-Clause",
+	"stringImportPaths": [
+		"."
+	],
 	"dependencies": {
 		"xxhash3": "~>1.0.1"
 	},

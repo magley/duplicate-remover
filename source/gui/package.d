@@ -17,6 +17,7 @@ import std.path;
 import std.stdio;
 import std.string;
 import vendor.iup;
+import common.ini;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
@@ -48,6 +49,7 @@ class ConfirmDeleteData
 }
 
 ProgramState P;
+IniData INI;
 
 extern (C) int on_results_list_add_items(Ihandle* ih, char* s, int i, double d, void* p)
 {
@@ -68,6 +70,7 @@ void add_items(string[][] collisions)
 
 void main_gui()
 {
+    INI.load(import("info.ini"));
     P = new ProgramState();
 
     IupOpen(null, null);
@@ -770,7 +773,7 @@ extern (C) int cb_help_about(Ihandle* self)
     Ihandle*[] items = [
         IupLabel("Duplicate Remover").IupSetAttributes("FONTSIZE=16"),
         IupHbox(IupLabel("Created by"),IupLink("https://github.com/magley", "magley"), null).IupSetAttributes("MARGIN=0x0"),
-        IupLabel("Version: 0.3.0 beta"), 
+        IupLabel(("Version: " ~ INI.programVersion).toStringz), 
         IupHbox(IupLabel("Written in"),IupLink("https://dlang.org/", "the D programming language"), null).IupSetAttributes("MARGIN=0x0"),
         IupHbox(IupLabel("GUI library:"),IupLink("https://www.tecgraf.puc-rio.br/iup/", "IUP"), null).IupSetAttributes("MARGIN=0x0"),
         IupHbox(IupLabel("Licensed under the"),IupLink("https://opensource.org/license/bsd-2-clause", "BSD 2-Clause License"), null).IupSetAttributes("MARGIN=0x0"),
@@ -814,13 +817,13 @@ extern (C) int cb_help_about(Ihandle* self)
 
 extern (C) int cb_help_about_copy_to_clipboard(Ihandle* self)
 {
-    string help_contents = q"(Duplicate Remover
+    string help_contents = format(q"(Duplicate Remover
 Created by https://github.com/magley
-Version: 0.3.0 beta
+Version: %s
 Written in the D programming language
 GUI library: IUP
 Licensed under the BSD 2-Clause License
-Download source code: https://github.com/magley/duplicate-remover)";
+Download source code: https://github.com/magley/duplicate-remover)", INI.programVersion);
 
     Ihandle* clipboard = IupGetHandle("clipboard");
     IupSetStrAttribute(clipboard, "TEXT", help_contents.toStringz());
