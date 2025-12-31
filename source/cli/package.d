@@ -6,6 +6,7 @@ version (cli)
 {
 // dfmt on
 
+import common.ini;
 import std.algorithm;
 import std.array;
 import std.conv;
@@ -16,6 +17,8 @@ import std.traits;
 
 import common;
 import vendor.clyd;
+
+IniData INI;
 
 const int MIN_THREADS = 1;
 const int MAX_THREADS = 8;
@@ -51,6 +54,7 @@ private HashFunction get_hash_func(string s)
 
 void main_cli(string[] args)
 {
+    INI.load(import("info.ini"));
     Command root = new Command("duplicate-remover", "Find and remove duplicate files")
         .arg(Arg.single("dir", "d", "Directory to scan", null))
         .arg(Arg.single("workers", "w", "Number of workers", "4"))
@@ -62,7 +66,9 @@ void main_cli(string[] args)
         .arg(Arg.flag("trash", null, "Move select deuplicates to trash", false))
         .arg(Arg.flag("delete", null, "Remove selected duplicates permanently", false))
         .set_longer_desc(
-            `Duplicate remover scans a directory for identical files based
+            `Duplicate Remover version ` ~ INI.programVersion ~ `
+            
+Duplicate remover scans a directory for identical files based
 on their hash. You must either pass export or removal arguments.
 Both work on selected files which are a subset of duplicates
 chosen through the selection strategy (--select). 
