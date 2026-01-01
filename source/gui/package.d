@@ -443,9 +443,14 @@ extern (C) int cb_params_workern_value_changed(Ihandle* self)
 
 extern (C) int cb_btn_run_clicked(Ihandle* self)
 {
+    begin_scan();
+    return IUP_DEFAULT;
+}
+
+private void begin_scan()
+{
     P.worker = new ScannerThread(P.directory, P.worker_count, P.hash_function);
     P.worker.start();
-    return IUP_DEFAULT;
 }
 
 extern (C) int cb_btn_cancel_clicked(Ihandle* self)
@@ -839,8 +844,7 @@ extern (C) int cb_send_iup_close(Ihandle* self)
 
 extern (C) int cb_menu_scan_begin(Ihandle* self)
 {
-    P.worker = new ScannerThread(P.directory, P.worker_count, P.hash_function);
-    P.worker.start();
+    begin_scan();
     return IUP_DEFAULT;
 }
 
