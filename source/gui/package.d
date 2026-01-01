@@ -276,7 +276,8 @@ void main_gui()
     Ihandle* submenu_file = IupSubmenu("File", menu_file);
     IupSetHandle("submenu_file", submenu_file);
 
-    Ihandle* menu_scan = IupMenu(null);
+    Ihandle* menu_scan_begin = iup_menu_item("Begin scan", "menu_scan_begin", cast(Icallback)&cb_menu_scan_begin);
+    Ihandle* menu_scan = IupMenu(menu_scan_begin, null);
     IupSetHandle("menu_scan", menu_scan);
     Ihandle* submenu_scan = IupSubmenu("Scan", menu_scan);
     IupSetHandle("submenu_scan", submenu_scan);
@@ -834,6 +835,13 @@ Download source code: https://github.com/magley/duplicate-remover)", INI.program
 extern (C) int cb_send_iup_close(Ihandle* self)
 {
     return IUP_CLOSE;
+}
+
+extern (C) int cb_menu_scan_begin(Ihandle* self)
+{
+    P.worker = new ScannerThread(P.directory, P.worker_count, P.hash_function);
+    P.worker.start();
+    return IUP_DEFAULT;
 }
 
 //
