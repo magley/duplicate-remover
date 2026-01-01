@@ -51,21 +51,10 @@ class ConfirmDeleteData
 ProgramState P;
 IniData INI;
 
-extern (C) int on_results_list_add_items(Ihandle* ih, char* s, int i, double d, void* p)
-{
-    add_items(P.worker.collisions);
-    return IUP_DEFAULT;
-}
-
 extern (C) int cb_on_export_btn_clicked(Ihandle* self)
 {
     open_export_dialog();
     return IUP_DEFAULT;
-}
-
-void add_items(string[][] collisions)
-{
-    return;
 }
 
 void main_gui()
