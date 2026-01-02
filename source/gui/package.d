@@ -847,6 +847,7 @@ extern (C) int cb_menu_scan_begin(Ihandle* self)
 
 extern (C) int cb_menu_results_export(Ihandle* self)
 {
+    open_export_dialog();
     return IUP_DEFAULT;
 }
 
