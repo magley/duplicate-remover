@@ -271,7 +271,11 @@ void main_gui()
     Ihandle* submenu_scan = IupSubmenu("Scan", menu_scan);
     IupSetHandle("submenu_scan", submenu_scan);
 
-    Ihandle* menu_results = IupMenu(null);
+    Ihandle* menu_results_export = iup_menu_item("Export...", "menu_results_export", cast(
+            Icallback)&cb_menu_results_export);
+    Ihandle* menu_results_delete = iup_menu_item("Delete selected", "menu_results_delete", cast(
+            Icallback)&cb_menu_results_delete);
+    Ihandle* menu_results = IupMenu(menu_results_export, menu_results_delete, null);
     IupSetHandle("menu_results", menu_results);
     Ihandle* submenu_results = IupSubmenu("Results", menu_results);
     IupSetHandle("submenu_results", submenu_results);
@@ -453,6 +457,12 @@ extern (C) int cb_btn_cancel_clicked(Ihandle* self)
 
 extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
 {
+    open_delete_selected();
+    return IUP_DEFAULT;
+}
+
+private void open_delete_selected()
+{
     string[] selected_files = [];
 
     if (P.results_ui !is null)
@@ -471,15 +481,13 @@ extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
     assert(P.delete_data !is null);
 
     if (!P.delete_data.do_delete)
-        return IUP_DEFAULT;
+        return;
 
     delete_selected_files(
         selected_files,
         !P.delete_data.permanently,
         P.worker_count
     );
-
-    return IUP_DEFAULT;
 }
 
 private void confirm_delete_dialog(ulong file_count, ulong bytes_to_remove)
@@ -834,6 +842,17 @@ extern (C) int cb_send_iup_close(Ihandle* self)
 extern (C) int cb_menu_scan_begin(Ihandle* self)
 {
     begin_scan();
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_menu_results_export(Ihandle* self)
+{
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_menu_results_delete(Ihandle* self)
+{
+    open_delete_selected();
     return IUP_DEFAULT;
 }
 
