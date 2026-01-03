@@ -580,6 +580,12 @@ class ScannerThread : Thread
     private void run()
     {
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "NO");
+        {
+            Ihandle* canvas = IupGetHandle("results_canvas");
+            IupSetAttribute(canvas, "ACTIVE", "NO");
+            IupUpdate(canvas);
+            IupRefresh(canvas);
+        }
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "NO");
@@ -616,6 +622,7 @@ class ScannerThread : Thread
         }
 
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
+        // "results_canvas" is reactivated after the contents are rebuilt
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
@@ -643,7 +650,9 @@ extern (C) int cb_results_canvas_msg(Ihandle*, const char*, int, double, void*)
         P.results_ui = new ResultsUI();
 
     P.results_ui.update(P.worker.collisions);
+    IupSetAttribute(IupGetHandle("results_canvas"), "ACTIVE", "YES");
     P.results_ui.quick_select(ResultQuickSelect.AllButLargest);
+
     return IUP_DEFAULT;
 }
 
