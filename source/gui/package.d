@@ -626,6 +626,10 @@ class ScannerThread : Thread
                 {
                     worker.cancel();
                     progress.cancel();
+
+                    worker.join();
+                    progress.join();
+
                     on_cancel();
                     writeln("Cancel ScannerThread");
                     return;

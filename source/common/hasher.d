@@ -61,6 +61,11 @@ class GroupsHasher : Thread
 
     float get_progress()
     {
+        if (workers.length == 0)
+        {
+            return 0;
+        }
+
         float p = 0;
         foreach (w; workers)
         {
@@ -78,7 +83,6 @@ class GroupsHasher : Thread
             w.cancel();
         }
         workers = [];
-        writeln("Cancel GroupsHasher");
     }
 }
 
@@ -156,7 +160,6 @@ class GroupHasherThread : Thread
                 {
                     if (cancelSignal)
                     {
-                        writeln("Cancel GroupHasherThread");
                         return G;
                     }
                 }
