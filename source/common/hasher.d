@@ -67,7 +67,18 @@ class GroupsHasher : Thread
             p += w.get_progress();
         }
         p /= workers.length;
+
         return p;
+    }
+
+    void cancel()
+    {
+        foreach (w; workers)
+        {
+            w.cancel();
+        }
+        workers = [];
+        writeln("Cancel GroupsHasher");
     }
 }
 
@@ -77,6 +88,7 @@ class GroupHasherThread : Thread
     string[][] groups;
     string[][] collisions;
     HashFunction hash_func;
+    private bool cancelSignal = false;
 
     int total = 1;
     int current = 0;
@@ -104,7 +116,7 @@ class GroupHasherThread : Thread
             total += g.length;
         }
 
-        collisions = hash_groups_partial_recursive(groups, k, hash_func, &on_progress);
+        collisions = my_hash_groups_partial_recursive(&on_progress);
     }
 
     void on_progress(int curr, int total)
@@ -116,6 +128,51 @@ class GroupHasherThread : Thread
     {
         int total_real = total * 2; // *2 because of k.
         return cast(float) current / (cast(float) total_real);
+    }
+
+    void cancel()
+    {
+        synchronized
+        {
+            cancelSignal = true;
+        }
+    }
+
+    private string[][] my_hash_groups_partial_recursive(ProgressFunc progress_cb)
+    {
+        // Based on hash_groups_partial_recursive.
+
+        int[] partial_k = k;
+
+        string[][] G = groups;
+
+        foreach (int k_; partial_k)
+        {
+            string[][] partial_collisions;
+
+            foreach (size_t i, string[] group; G)
+            {
+                synchronized
+                {
+                    if (cancelSignal)
+                    {
+                        writeln("Cancel GroupHasherThread");
+                        return G;
+                    }
+                }
+
+                string[][] group_collisions = hash_group_partial(group, k_, hash_func, progress_cb);
+                partial_collisions ~= group_collisions;
+            }
+
+            G = partial_collisions;
+            if (G.length == 0)
+            {
+                break;
+            }
+        }
+
+        return G;
     }
 }
 

@@ -157,7 +157,8 @@ void main_gui()
     IupSetHandle("run_progress", run_progress);
 
     Ihandle* run_hbox = IupHbox(
-        btn_run, //btn_cancel,
+        btn_run,
+        btn_cancel,
         run_progress,
         null
     );
@@ -450,7 +451,14 @@ extern (C) int cb_btn_cancel_clicked(Ihandle* self)
 {
     if (P.worker !is null)
     {
-        //
+        synchronized
+        {
+            P.worker.cancelSignal = true;
+        }
+    }
+    else
+    {
+        assert(0);
     }
     return IUP_DEFAULT;
 }
@@ -590,6 +598,7 @@ class ScannerThread : Thread
         }
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "NO");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
@@ -613,6 +622,15 @@ class ScannerThread : Thread
         {
             synchronized
             {
+                if (cancelSignal)
+                {
+                    worker.cancel();
+                    progress.cancel();
+                    on_cancel();
+                    writeln("Cancel ScannerThread");
+                    return;
+                }
+
                 if (worker.finished)
                 {
                     break;
@@ -640,6 +658,7 @@ class ScannerThread : Thread
         // "results_canvas" is reactivated after the contents are rebuilt
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
@@ -655,6 +674,24 @@ class ScannerThread : Thread
 
         // Calls: cb_results_canvas_msg()
         IupPostMessage(IupGetHandle("results_canvas"), null, 0, 0.0, null);
+    }
+
+    private void on_cancel()
+    {
+        IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "YES");
+        IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
+            format("Time: %s (Cancelled)", time_to_string(total_time_ms)).toStringz()
+        );
+        IupPostMessage(IupGetHandle("results_canvas"), null, 0, 0.0, null);
+        IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("results_canvas"), "ACTIVE", "NO");
+        IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
+        IupSetStrAttribute(IupGetHandle("res_groups_lbl"), "TITLE", "Collision groups:");
+        IupSetStrAttribute(IupGetHandle("res_filecnt_lbl"), "TITLE", "Conflicting files:");
     }
 }
 
@@ -682,6 +719,7 @@ class ProgressThread : Thread
 {
     GroupsHasher worker;
     ScannerThread context;
+    private bool cancelSignal;
 
     this(ScannerThread context, GroupsHasher worker)
     {
@@ -691,13 +729,31 @@ class ProgressThread : Thread
         super(&run);
     }
 
+    void cancel()
+    {
+        synchronized
+        {
+            cancelSignal = true;
+        }
+    }
+
     void run()
     {
+        cancelSignal = false;
         Ihandle* run_progress = IupGetHandle("run_progress");
         int max = 100;
 
         while (!worker.finished)
         {
+            synchronized
+            {
+                if (cancelSignal)
+                {
+                    IupSetStrAttribute(run_progress, "VALUE", "0");
+                    writeln("Cancel ProgressThread");
+                    return;
+                }
+            }
             Thread.sleep(dur!("msecs")(100));
             float p = worker.get_progress();
 
