@@ -567,6 +567,7 @@ class ScannerThread : Thread
     // State
     GroupsHasher worker;
     ProgressThread progress;
+    bool cancelSignal = false;
 
     this(string directory, int worker_count, HashFunction hash_func)
     {
@@ -579,6 +580,7 @@ class ScannerThread : Thread
 
     private void run()
     {
+        cancelSignal = false;
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "NO");
         {
             Ihandle* canvas = IupGetHandle("results_canvas");
@@ -605,10 +607,23 @@ class ScannerThread : Thread
         progress = new ProgressThread(this, worker);
 
         progress.start();
-        worker.run();
+        worker.start();
 
+        while (true)
+        {
+            synchronized
+            {
+                if (worker.finished)
+                {
+                    break;
+                }
+            }
+
+            sleep(dur!"msecs"(50));
+        }
+
+        worker.join();
         collisions = worker.collisions;
-
         progress.join();
 
         collision_time_ms = sw.peek().total!"msecs"();

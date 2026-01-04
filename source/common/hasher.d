@@ -8,7 +8,7 @@ import std.stdio;
 
 alias ProgressFunc = void delegate(int, int);
 
-class GroupsHasher
+class GroupsHasher : Thread
 {
     // Input
     string[][] groups;
@@ -30,6 +30,8 @@ class GroupsHasher
         this.worker_count = worker_count;
         this.hash_func = hash_function;
         this.groups_split = split_groups_distribute_size_evenly(this.groups, this.worker_count);
+        this.isDaemon(true);
+        super(&run);
     }
 
     void run()
