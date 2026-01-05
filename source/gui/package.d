@@ -268,6 +268,7 @@ void main_gui()
 
     Ihandle* menu_scan_begin = iup_menu_item("Begin scan", "menu_scan_begin", cast(Icallback)&cb_menu_scan_begin);
     Ihandle* menu_scan_cancel = iup_menu_item("Cancel scan", "menu_scan_cancel", cast(Icallback)&cb_menu_scan_cancel);
+    IupSetAttribute(menu_scan_cancel, "ACTIVE", "NO");
     Ihandle* menu_scan = IupMenu(menu_scan_begin, menu_scan_cancel, null);
     IupSetHandle("menu_scan", menu_scan);
     Ihandle* submenu_scan = IupSubmenu("Scan", menu_scan);
@@ -605,7 +606,8 @@ class ScannerThread : Thread
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "YES");
-        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("menu_scan_begin"), "ACTIVE", "NO");
+        IupSetAttribute(IupGetHandle("menu_scan_cancel"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "NO");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "0");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE", "");
@@ -668,7 +670,8 @@ class ScannerThread : Thread
         IupSetAttribute(IupGetHandle("results_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("menu_scan_begin"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("menu_scan_cancel"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_progress"), "VALUE", "100");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
@@ -690,7 +693,8 @@ class ScannerThread : Thread
         IupSetAttribute(IupGetHandle("setup_frame"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
         IupSetAttribute(IupGetHandle("btn_cancel"), "ACTIVE", "NO");
-        IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("menu_scan_begin"), "ACTIVE", "YES");
+        IupSetAttribute(IupGetHandle("menu_scan_cancel"), "ACTIVE", "NO");
         IupSetAttribute(IupGetHandle("submenu_results"), "ACTIVE", "YES");
         IupSetStrAttribute(IupGetHandle("run_time"), "TITLE",
             format("Time: %s (Cancelled)", time_to_string(total_time_ms)).toStringz()
