@@ -267,7 +267,8 @@ void main_gui()
     IupSetHandle("submenu_file", submenu_file);
 
     Ihandle* menu_scan_begin = iup_menu_item("Begin scan", "menu_scan_begin", cast(Icallback)&cb_menu_scan_begin);
-    Ihandle* menu_scan = IupMenu(menu_scan_begin, null);
+    Ihandle* menu_scan_cancel = iup_menu_item("Cancel scan", "menu_scan_cancel", cast(Icallback)&cb_menu_scan_cancel);
+    Ihandle* menu_scan = IupMenu(menu_scan_begin, menu_scan_cancel, null);
     IupSetHandle("menu_scan", menu_scan);
     Ihandle* submenu_scan = IupSubmenu("Scan", menu_scan);
     IupSetHandle("submenu_scan", submenu_scan);
@@ -449,6 +450,12 @@ private void begin_scan()
 
 extern (C) int cb_btn_cancel_clicked(Ihandle* self)
 {
+    cancel_scan();
+    return IUP_DEFAULT;
+}
+
+private void cancel_scan()
+{
     if (P.worker !is null)
     {
         synchronized
@@ -460,7 +467,6 @@ extern (C) int cb_btn_cancel_clicked(Ihandle* self)
     {
         assert(0);
     }
-    return IUP_DEFAULT;
 }
 
 extern (C) int cb_on_delete_btn_clicked(Ihandle* self)
@@ -631,7 +637,6 @@ class ScannerThread : Thread
                     progress.join();
 
                     on_cancel();
-                    writeln("Cancel ScannerThread");
                     return;
                 }
 
@@ -754,7 +759,6 @@ class ProgressThread : Thread
                 if (cancelSignal)
                 {
                     IupSetStrAttribute(run_progress, "VALUE", "0");
-                    writeln("Cancel ProgressThread");
                     return;
                 }
             }
@@ -938,6 +942,12 @@ extern (C) int cb_menu_results_export(Ihandle* self)
 extern (C) int cb_menu_results_delete(Ihandle* self)
 {
     open_delete_selected();
+    return IUP_DEFAULT;
+}
+
+extern (C) int cb_menu_scan_cancel(Ihandle* self)
+{
+    cancel_scan();
     return IUP_DEFAULT;
 }
 
