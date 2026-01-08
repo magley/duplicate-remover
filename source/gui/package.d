@@ -381,7 +381,7 @@ private void open_directory_picker_dialog()
 
 private void open_warning_cant_scan_dialog(string[] cant_scan_paths)
 {
-    string warning_message = "The following folder(s) cannot be scanned due to insuffcent priveleges:";
+    string warning_message = "The following folder(s) cannot be scanned due to insufficient priveleges:";
     Ihandle* msg = IupLabel(warning_message.toStringz());
 
     Ihandle* li = IupList(null);
@@ -391,6 +391,7 @@ private void open_warning_cant_scan_dialog(string[] cant_scan_paths)
         IupSetStrAttribute(li, id.toStringz(), cant_scan_paths[i].toStringz());
     }
     IupSetStrAttribute(li, format("%d", cant_scan_paths.length + 1).toStringz(), null);
+    IupSetAttribute(li, "VISIBLELINES", "8");
 
     P.delete_data = new ConfirmDeleteData();
 
