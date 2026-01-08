@@ -360,6 +360,11 @@ private void open_directory_picker_dialog()
             import std.format;
 
             DirectoryInfo dirinfo = get_directory_info(P.directory);
+            if (dirinfo.cantScan.length > 0)
+            {
+                open_warning_cant_scan_dialog(dirinfo.cantScan);
+            }
+
             string dir_info = format(
                 "Size: %s, Files: %d, Folders: %d",
                 to_size_byte_unit(dirinfo.size),
@@ -374,11 +379,50 @@ private void open_directory_picker_dialog()
     IupDestroy(file_dlg);
 }
 
+private void open_warning_cant_scan_dialog(string[] cant_scan_paths)
+{
+    string warning_message = "The following folder(s) cannot be scanned due to insuffcent priveleges:";
+    Ihandle* msg = IupLabel(warning_message.toStringz());
+
+    Ihandle* li = IupList(null);
+    for (int i = 0; i < cant_scan_paths.length; i++)
+    {
+        string id = format("%d", i);
+        IupSetStrAttribute(li, id.toStringz(), cant_scan_paths[i].toStringz());
+    }
+    IupSetStrAttribute(li, format("%d", cant_scan_paths.length + 1).toStringz(), null);
+
+    P.delete_data = new ConfirmDeleteData();
+
+    Ihandle* btn_ok = IupButton("Ok", null);
+    IupSetAttribute(btn_ok, "PADDING", "11x5");
+    IupSetCallback(btn_ok, "ACTION", &cb_confirm_delete_dialog_cancel);
+    Ihandle* buttons = IupHbox(btn_ok, null);
+    IupSetAttribute(buttons, "MARGIN", "11x0");
+
+    Ihandle* contain = IupVbox(msg, li, IupFill(), buttons, null);
+    IupSetAttribute(contain, "EXPAND", "YES");
+    IupSetAttribute(contain, "GAP", "8");
+
+    Ihandle* dlg = IupDialog(contain);
+
+    IupSetAttribute(dlg, "TITLE", "Warning");
+    IupSetAttribute(dlg, "SIMULATEMODAL", "YES");
+    IupSetAttribute(dlg, "MINSIZE", "300x150");
+    IupSetAttribute(dlg, "MARGIN", "11x8");
+    IupSetAttribute(dlg, "RESIZE", "NO");
+
+    IupPopup(dlg, IUP_CURRENT, IUP_CURRENT);
+    IupDestroy(dlg);
+}
+
 struct DirectoryInfo
 {
     ulong size = 0;
     ulong folders = 0;
     ulong files = 0;
+
+    string[] cantScan;
 }
 
 DirectoryInfo get_directory_info(string dir)
@@ -394,18 +438,25 @@ DirectoryInfo get_directory_info(string dir)
         string d = queue[0];
         queue = queue[1 .. $];
 
-        foreach (DirEntry e; dirEntries(d, SpanMode.shallow))
+        try
         {
-            if (e.isFile())
+            foreach (DirEntry e; dirEntries(d, SpanMode.shallow))
             {
-                result.size += e.size;
-                result.files++;
+                if (e.isFile())
+                {
+                    result.size += e.size;
+                    result.files++;
+                }
+                else if (e.isDir())
+                {
+                    queue ~= e.name;
+                    result.folders++;
+                }
             }
-            else if (e.isDir())
-            {
-                queue ~= e.name;
-                result.folders++;
-            }
+        }
+        catch (FileException e)
+        {
+            result.cantScan ~= d;
         }
     }
 

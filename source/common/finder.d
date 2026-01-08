@@ -1,10 +1,10 @@
 module common.finder;
 
-import std.stdio;
-import std.file;
-import std.path;
 import std.algorithm;
 import std.array;
+import std.file;
+import std.path;
+import std.stdio;
 
 import common;
 
@@ -103,6 +103,5 @@ private string[][] group_files_by_size(string path)
     {
         result ~= size_group;
     }
-
     return result;
 }
