@@ -86,17 +86,25 @@ private string[][] group_files_by_size(string path)
     string[][] result;
 
     string[][ulong] size_groups;
-    foreach (DirEntry f; dirEntries(path, SpanMode.depth))
+    try
     {
-        if (f.isDir())
+
+        foreach (DirEntry f; dirEntries(path, SpanMode.depth))
         {
-            continue;
+            if (f.isDir())
+            {
+                continue;
+            }
+
+            ulong f_size = f.size();
+            string f_name = f.name();
+
+            size_groups[f_size] ~= f_name;
         }
-
-        ulong f_size = f.size();
-        string f_name = f.name();
-
-        size_groups[f_size] ~= f_name;
+    }
+    catch (FileException e)
+    {
+        // Skip
     }
 
     foreach (string[] size_group; size_groups)
