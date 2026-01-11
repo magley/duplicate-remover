@@ -181,7 +181,7 @@ void cb_scan(Command cmd)
         writefln("Exporting results as %s to %s", export_type, export_file);
 
         ExportSettings settings = get_export_settings(export_type, cmd);
-        export_results(export_file, export_type, collisions, settings);
+        export_results(export_file, export_type, collisions, [], settings); // TODO: Bad paths
     }
 
     // -------------------------------------------------

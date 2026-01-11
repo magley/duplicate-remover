@@ -1,12 +1,12 @@
 module common.exporting;
 
-import std.json;
-import std.file;
-import std.stdio;
-import std.string;
+import common;
 import std.algorithm;
 import std.array;
-import common;
+import std.file;
+import std.json;
+import std.stdio;
+import std.string;
 
 enum FileType
 {
@@ -35,12 +35,12 @@ struct ExportSettings
     ExportSettings_JSON json;
 }
 
-void export_results(string fname, FileType mode, string[][] collisions, ExportSettings settings)
+void export_results(string fname, FileType mode, string[][] collisions, string[] failed_paths, ExportSettings settings)
 {
     final switch (mode) with (FileType)
     {
     case JSON:
-        export_json(fname, collisions, settings.json);
+        export_json(fname, collisions, failed_paths, settings.json);
         return;
     case JSON_Simple:
         export_json_simple(fname, collisions);
@@ -73,7 +73,7 @@ private struct FileWithSize
     }
 }
 
-private void export_json(string fname, string[][] collisions, ExportSettings_JSON settings)
+private void export_json(string fname, string[][] collisions, string[] failed_paths, ExportSettings_JSON settings)
 {
     JSONValue j;
     j["groups"] = JSONValue.emptyArray;
@@ -103,6 +103,7 @@ private void export_json(string fname, string[][] collisions, ExportSettings_JSO
         j["groups"].array() ~= o;
         groups_with_size ~= files_with_size;
     }
+    j["failed_paths"] = failed_paths;
 
     final switch (settings.quick_include) with (ExportSettings_JSON.QuickInclude)
     {

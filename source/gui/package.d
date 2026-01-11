@@ -32,6 +32,7 @@ class ProgramState
     // ========== Scanner =====================================================
 
     ScannerThread worker = null;
+    DirectoryInfo dir_info;
 
     // ========== Results =====================================================
 
@@ -374,6 +375,8 @@ private void open_directory_picker_dialog()
             IupSetStrAttribute(IupGetHandle("dir_info_label"), "TITLE", dir_info.toStringz());
             IupSetAttribute(IupGetHandle("btn_run"), "ACTIVE", "YES");
             IupSetAttribute(IupGetHandle("submenu_scan"), "ACTIVE", "YES");
+
+            P.dir_info = dirinfo;
         }
     }
     IupDestroy(file_dlg);

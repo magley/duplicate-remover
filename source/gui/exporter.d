@@ -180,7 +180,7 @@ private void do_export(string fname)
         ExportSettings_JSON.QuickInclude
     )("json__include_list_radio");
 
-    export_results(fname, E.mode, E.collisions, E.settings);
+    export_results(fname, E.mode, E.collisions, P.dir_info.cantScan, E.settings);
 }
 
 private string[2][] get_filters(FileType mode)
